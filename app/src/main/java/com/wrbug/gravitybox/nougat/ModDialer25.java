@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.wrbug.gravitybox.nougat.ledcontrol.QuietHours;
+import com.wrbug.gravitybox.nougat.util.ArrayUtils;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -33,7 +34,10 @@ import de.robv.android.xposed.XposedHelpers;
 public class ModDialer25 {
     private static final String TAG = "GB:ModDialer25";
 
-    private static final String CLASS_DIALTACTS_ACTIVITY = "com.android.dialer.DialtactsActivity";
+    private static final String CLASS_DIALTACTS_APP_ACTIVITY = "com.android.dialer.app.DialtactsActivity";
+    private static final String CLASS_DIALTACTS_ACTIVITY = "com.android.dialer.app.DialtactsActivity";
+    private static final String CLASS_DIALTACTS_APP_FRAGMENT = "com.android.dialer.app.dialpad.DialpadFragment";
+    private static final String CLASS_DIALTACTS_FRAGMENT = "com.android.dialer.dialpad.DialpadFragment";
     private static final String CLASS_DIALTACTS_ACTIVITY_GOOGLE =
             "com.google.android.apps.dialer.extensions.GoogleDialtactsActivity";
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -67,7 +71,7 @@ public class ModDialer25 {
 
     private static ClassInfo resolveDialtactsActivity(ClassLoader cl) {
         ClassInfo info = null;
-        String[] CLASS_NAMES = new String[]{CLASS_DIALTACTS_ACTIVITY};
+        String[] CLASS_NAMES = new String[]{CLASS_DIALTACTS_APP_ACTIVITY, CLASS_DIALTACTS_ACTIVITY};
         String[] METHOD_NAMES = new String[]{"displayFragment"};
         for (String className : CLASS_NAMES) {
             Class<?> clazz = XposedHelpers.findClassIfExists(className, cl);
@@ -77,7 +81,7 @@ public class ModDialer25 {
             info = new ClassInfo(clazz);
             for (String methodName : METHOD_NAMES) {
                 if (methodName.equals("displayFragment")) {
-                    for (String realMethodName : new String[]{methodName, "c", "b"}) {
+                    for (String realMethodName : new String[]{methodName, "a", "c", "b"}) {
                         Method m = XposedHelpers.findMethodExactIfExists(clazz, realMethodName,
                                 Intent.class);
                         if (m != null) {
@@ -101,7 +105,7 @@ public class ModDialer25 {
 
     private static ClassInfo resolveDialpadFragment(ClassLoader cl) {
         ClassInfo info = null;
-        String[] CLASS_NAMES = new String[]{"com.android.dialer.dialpad.DialpadFragment"};
+        String[] CLASS_NAMES = new String[]{CLASS_DIALTACTS_APP_FRAGMENT, CLASS_DIALTACTS_FRAGMENT};
         String[] METHOD_NAMES = new String[]{"onResume", "playTone"};
         for (String className : CLASS_NAMES) {
             Class<?> clazz = XposedHelpers.findClassIfExists(className, cl);
@@ -149,7 +153,7 @@ public class ModDialer25 {
                                 return;
 
                             final String realClassName = param.thisObject.getClass().getName();
-                            if (realClassName.equals(CLASS_DIALTACTS_ACTIVITY)) {
+                            if (ArrayUtils.arrayHas(new String[]{CLASS_DIALTACTS_ACTIVITY, CLASS_DIALTACTS_APP_ACTIVITY}, realClassName)) {
                                 XposedHelpers.callMethod(param.thisObject,
                                         classInfoDialtactsActivity.extra.toString(), false);
                                 if (DEBUG)
