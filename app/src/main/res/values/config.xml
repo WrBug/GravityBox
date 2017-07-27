@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (C) 2015 Peter Gregus for GravityBox Project (C3C076@xda)
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<resources>
+    <string name="url_gravitybox" translatable="false">https://github.com/WrBug/GravityBox</string>
+    <string name="url_xposed" translatable="false">http://forum.xda-developers.com/showthread.php?t=1574401</string>
+    <string name="url_donate" translatable="false">https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&amp;hosted_button_id=HB4XU4Y98B2PC</string>
+    <string name="url_qqgroup" translatable="false">https://jq.qq.com/?_wv=1027&amp;k=4CIU0gQ</string>
+    <string name="url_gplus" translatable="false">https://www.wrbug.com</string>
+    <string name="url_web_service" translatable="false">http://gravitybox.ceco.sk.eu.org/service.php</string>
+    <string name="url_gravitybox_unlocker" translatable="false">https://play.google.com/store/apps/details?id=com.ceco.gravitybox.unlocker</string>
+
+    <!-- Limits for screen brightness settings -->
+    <integer name="screen_brightness_min">1</integer>
+    <integer name="screen_brightness_dim_min">1</integer>
+
+    <!-- Whether navbar in landscape is vertical -->
+    <bool name="hasVerticalNavbar">true</bool>
+
+</resources>

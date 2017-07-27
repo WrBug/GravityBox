@@ -1,0 +1,84 @@
+<!--
+ * Copyright (C) 2013 Peter Gregus for GravityBox Project (C3C076@xda)
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Base application theme, dependent on API level. This theme is replaced
+        by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
+    -->
+    <!-- Light application theme -->
+    <style name="AppBaseTheme" parent="android:Theme.Material.Light.DarkActionBar" />
+    <style name="DialogBaseTheme" parent="android:Theme.Material.Light.Dialog" />
+    <style name="AlertDialogBaseTheme" parent="android:Theme.Material.Light.Dialog.Alert" />
+
+    <style name="AppTheme" parent="AppBaseTheme">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="android:colorPrimary">#ff30a6cb</item>
+        <item name="android:colorPrimaryDark">#ff2788a6</item>
+        <item name="android:colorAccent">#ff30a6cb</item>
+        <item name="android:dialogTheme">@style/DialogStyle</item>
+        <item name="android:alertDialogTheme">@style/AlertDialogStyle</item>
+    </style>
+
+    <style name="DialogStyle" parent="DialogBaseTheme" >
+        <item name="android:colorAccent">#ff30a6cb</item>
+    </style>
+
+    <style name="AlertDialogStyle" parent="AlertDialogBaseTheme" >
+        <item name="android:colorAccent">#ff30a6cb</item>
+    </style>
+
+    <!-- Dark application theme -->
+    <style name="AppBaseThemeDark" parent="android:Theme.Material" />
+    <style name="AppThemeDark" parent="AppBaseThemeDark" />
+
+    <!-- AppLauncher labels -->
+    <style name="AppLauncherTextView">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">11dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:background">@drawable/ripple</item>
+        <item name="android:clickable">true</item>
+        <item name="android:padding">4dp</item>
+    </style>
+
+    <!-- QuickApp tile dialog -->
+    <style name="QuickAppTileTextView">
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">11dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:background">@drawable/ripple</item>
+        <item name="android:clickable">true</item>
+        <item name="android:padding">4dp</item>
+    </style>
+
+    <!-- QS DetailListAdapter -->
+    <style name="TextAppearance" />
+
+    <style name="TextAppearance.QS">
+        <item name="android:textStyle">normal</item>
+        <item name="android:textColor">@color/qs_text</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.QS.DetailEmpty">
+        <item name="android:textSize">@dimen/qs_detail_empty_text_size</item>
+        <item name="android:textColor">@color/qs_subhead</item>
+    </style>
+
+</resources>

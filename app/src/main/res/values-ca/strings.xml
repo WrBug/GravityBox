@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GravityBox [NG]</string>
+
+    <string name="battery_style_title">Indicador de la bateria</string>
+    <string name="battery_style_stock">Indicador predeterminat</string>
+    <string name="battery_style_circle">Cercle amb percentatge</string>
+    <string name="battery_percent_text_title">Text gran amb el percentatge</string>
+    <string name="battery_style_none">No mostrar cap</string>
+
+    <string name="vol_music_controls_title">Tecles de volum per canviar la pista</string>
+    <string name="vol_music_controls_summary">Canvia la pista amb una pressió llarga de les tecles de volum si la pantalla està apagada</string>
+
+    <string name="low_battery_warning_policy_title">Avís de bateria baixa</string>
+    <string name="low_battery_warning_off">Desactivat</string>
+
+    <string name="reboot_required">Es necessari arrencar de nou</string>
+
+    <string name="poweroff_advanced_title">Menú d\'apagat avançat</string>
+    <string name="poweroff_advanced_summary">Habilita el menú d\'apagat avançat i l\'opció de d\'arrencar en mode de recuperació</string>
+    <string name="poweroff_recovery">Mode de recuperació</string>    
+
+    <string name="vol_key_cursor_control_title">Control del cursor amb les tecles de volum</string>
+    <string name="vol_key_cursor_control_summary">Controlar el cursor en els camps de text amb les tecles de volum</string>
+    <string name="vol_key_cursor_control_off">Desactivat</string>
+    <string name="vol_key_cursor_control_on">Volum superior/inferior mou el cursor esquerra/dreta</string>
+    <string name="vol_key_cursor_control_on_reverse">Volum superior/inferior mou el cursor dreta/esquerra</string>
+
+    <string name="recents_clear_all_title">Suprimir totes les tasques recents</string>
+
+    <string name="important">Important</string>
+
+    <string name="caller_fullscreen_photo_title">Fotografia del contacte a pantalla sencera</string>
+
+ <!-- QuickSettings strings -->
+    <string name="quick_settings_sync_on">Sincronització activada</string>
+    <string name="quick_settings_sync_off">Sincronització desactivada</string>
+
+    <!--  QuickSettings settings -->
+    <string name="quick_settings_title">Configuració de l\'aplicació calaix"</string>
+    <string name="quick_settings_summary">Permet triar les dreceres que es mostre al calaix</string>
+    <string name="qs_tile_airplane_mode">Mode avió</string>
+    <string name="qs_tile_wifi">Wi-Fi</string>
+    <string name="qs_tile_bluetooth">Bluetooth</string>
+    <string name="qs_tile_gps">GPS</string>
+    <string name="qs_tile_mobile_data">Dades mòbils</string>
+    <string name="qs_tile_data_usage">Estadistiques de dades</string>
+    <string name="qs_tile_autorotation">Auto rotació</string>
+    <string name="qs_tile_sync">Sincronització</string>
+    <string name="qs_tile_wifi_ap">Punt d\'accés Wi-Fi</string>
+    <string name="qs_tile_gravitybox">GravityBox</string>
+
+    <!-- Swap volume keys when the screen is rotated -->
+    <string name="pref_vol_swap_keys_title">Intercanvia els botons de volum</string>
+    <string name="pref_vol_swap_keys_summary">Intercanvia els botons de volum quan la pantalla estigui rotada</string>
+
+</resources>

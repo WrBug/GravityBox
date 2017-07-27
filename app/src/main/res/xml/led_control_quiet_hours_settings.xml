@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (C) 2014 Peter Gregus for GravityBox Project (C3C076@xda)
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <SwitchPreference
+        android:key="pref_lc_qh_enabled"
+        android:title="@string/pref_lc_qh_enabled_title"
+        android:summary="@string/pref_lc_qh_enabled_summary"
+        android:defaultValue="false" />
+
+    <CheckBoxPreference
+        android:key="pref_lc_qh_mute_led"
+        android:title="@string/pref_lc_qh_mute_led_title"
+        android:defaultValue="false"
+        android:dependency="pref_lc_qh_enabled" />
+
+    <CheckBoxPreference
+        android:key="pref_lc_qh_mute_vibe"
+        android:title="@string/pref_lc_qh_mute_vibe_title"
+        android:summary="@string/pref_lc_qh_mute_vibe_summary"
+        android:defaultValue="true"
+        android:dependency="pref_lc_qh_enabled" />
+
+    <CheckBoxPreference
+        android:key="pref_lc_qh_mute_system_vibe"
+        android:title="@string/pref_lc_qh_mute_system_vibe_title"
+        android:summary="@string/pref_lc_qh_mute_system_vibe_summary"
+        android:defaultValue="false"
+        android:dependency="pref_lc_qh_enabled" />
+
+    <MultiSelectListPreference 
+        android:key="pref_lc_qh_mute_system_sounds"
+        android:title="@string/pref_lc_qh_mute_system_sounds_title"
+        android:entries="@array/system_sound_entries"
+        android:entryValues="@array/system_sound_values"
+        android:defaultValue="@array/empty_array"
+        android:dependency="pref_lc_qh_enabled" />
+
+    <CheckBoxPreference
+        android:key="pref_lc_qh_statusbar_icon"
+        android:title="@string/pref_lc_qh_statusbar_icon_title"
+        android:summary="@string/pref_lc_qh_statusbar_icon_summary"
+        android:defaultValue="true"
+        android:dependency="pref_lc_qh_enabled" />
+
+    <CheckBoxPreference
+        android:key="pref_lc_qh_interactive"
+        android:title="@string/pref_lc_qh_interactive_title"
+        android:summary="@string/pref_lc_qh_interactive_summary"
+        android:defaultValue="false"
+        android:dependency="pref_lc_qh_enabled" />
+
+    <PreferenceCategory 
+        android:key="pref_lc_qh_cat_weekdays"
+        android:title="@string/pref_lc_qh_cat_weekdays_title">
+
+        <MultiSelectListPreference 
+            android:key="pref_lc_qh_weekdays"
+            android:title="@string/pref_lc_qh_weekdays_title"
+            android:dependency="pref_lc_qh_enabled" />
+
+        <com.wrbug.gravitybox.nougat.preference.TimePreference
+            android:key="pref_lc_qh_start2"
+            android:title="@string/pref_lc_qh_start_title"
+            android:defaultValue="1380"
+            android:dependency="pref_lc_qh_enabled" />
+
+        <com.wrbug.gravitybox.nougat.preference.TimePreference
+            android:key="pref_lc_qh_end2"
+            android:title="@string/pref_lc_qh_end_title"
+            android:defaultValue="360"
+            android:dependency="pref_lc_qh_enabled" />
+    </PreferenceCategory>
+
+    <PreferenceCategory 
+        android:key="pref_lc_qh_cat_weekend"
+        android:title="@string/pref_lc_qh_cat_weekend_title">
+        <com.wrbug.gravitybox.nougat.preference.TimePreference
+            android:key="pref_lc_qh_start_alt2"
+            android:title="@string/pref_lc_qh_start_title"
+            android:defaultValue="1380"
+            android:dependency="pref_lc_qh_enabled" />
+
+        <com.wrbug.gravitybox.nougat.preference.TimePreference
+            android:key="pref_lc_qh_end_alt2"
+            android:title="@string/pref_lc_qh_end_title"
+            android:defaultValue="360"
+            android:dependency="pref_lc_qh_enabled" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

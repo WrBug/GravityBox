@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (C) 2014 Peter Gregus for GravityBox Project (C3C076@xda)
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <SwitchPreference
+            android:key="pref_lc_default_settings"
+            android:title="@string/lc_activity_menu_default_settings"
+            android:summary="@string/pref_lc_default_settings_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+    <PreferenceCategory 
+        android:key="pref_cat_lc_lights"
+        android:title="@string/pref_cat_lc_lights_title">
+
+        <MultiSelectListPreference 
+            android:key="pref_lc_led_dnd"
+            android:title="@string/pref_lc_led_dnd_title"
+            android:summary="@string/pref_lc_led_dnd_summary"
+            android:dialogTitle="@string/pref_lc_led_dnd_dialog_title"
+            android:entries="@array/dnd_tile_em_entries"
+            android:entryValues="@array/dnd_tile_em_values"
+            android:defaultValue="@array/empty_array"
+            android:persistent="false" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_led_ignore_update"
+            android:title="@string/pref_lc_led_ignore_update_title"
+            android:summary="@string/pref_lc_led_ignore_update_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+        <ListPreference
+            android:key="pref_lc_led_mode"
+            android:title="@string/pref_lc_led_mode_title"
+            android:entries="@array/lc_led_mode_entries"
+            android:entryValues="@array/lc_led_mode_values"
+            android:defaultValue="OVERRIDE" />
+
+        <net.margaritov.preference.colorpicker.ColorPickerPreference 
+            android:key="pref_lc_led_color"
+            android:title="@string/pref_lc_led_color_title"
+            android:defaultValue="@integer/COLOR_WHITE"
+            alphaSlider="true"
+            android:persistent="false" />
+
+        <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
+            android:key="pref_lc_led_time_on"
+            android:title="@string/pref_lc_led_time_on_title"
+            minimum="50"
+            maximum="10000"
+            interval="50"
+            monitorBoxEnabled="true"
+            monitorBoxUnit="ms"
+            android:defaultValue="1000"
+            android:persistent="false" />
+
+        <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
+            android:key="pref_lc_led_time_off"
+            android:title="@string/pref_lc_led_time_off_title"
+            minimum="0"
+            maximum="30000"
+            interval="50"
+            monitorBoxEnabled="true"
+            monitorBoxUnit="ms"
+            android:defaultValue="5000"
+            android:persistent="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_cat_lc_sounds"
+        android:title="@string/pref_cat_lc_sounds_title">
+
+        <CheckBoxPreference
+            android:key="pref_lc_notif_sound_override"
+            android:title="@string/pref_lc_notif_sound_override_title"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+        <Preference
+            android:key="pref_lc_notif_sound"
+            android:title="@string/pref_lc_notif_sound_title"
+            android:persistent="false"
+            android:dependency="pref_lc_notif_sound_override" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_sound_replace"
+            android:title="@string/pref_lc_sound_replace_title"
+            android:summary="@string/pref_lc_sound_replace_summary"
+            android:defaultValue="true"
+            android:persistent="false"
+            android:dependency="pref_lc_notif_sound_override" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_notif_sound_only_once"
+            android:title="@string/pref_lc_notif_sound_only_once_title"
+            android:summary="@string/pref_lc_notif_sound_only_once_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+        <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
+            android:key="pref_lc_notif_sound_only_once_timeout"
+            android:title="@string/pref_lc_notif_sound_only_once_timeout_title"
+            minimum="0"
+            maximum="1800"
+            interval="5"
+            monitorBoxEnabled="true"
+            monitorBoxUnit="s" 
+            android:defaultValue="0"
+            android:dependency="pref_lc_notif_sound_only_once"
+            android:persistent="false" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_notif_insistent"
+            android:title="@string/pref_lc_notif_insistent_title"
+            android:summary="@string/pref_lc_notif_insistent_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_cat_lc_vibrations"
+        android:title="@string/pref_cat_lc_vibrations_title">
+
+        <CheckBoxPreference
+            android:key="pref_lc_vibrate_override"
+            android:title="@string/pref_lc_vibrate_override_title"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+        <EditTextPreference
+            android:key="pref_lc_vibrate_pattern"
+            android:title="@string/pref_lc_vibrate_pattern_title"
+            android:summary="@string/pref_lc_vibrate_pattern_summary"
+            android:persistent="false"
+            android:defaultValue="0,250,250,250"
+            android:dependency="pref_lc_vibrate_override" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_vibrate_replace"
+            android:title="@string/pref_lc_vibrate_replace_title"
+            android:summary="@string/pref_lc_vibrate_replace_summary"
+            android:defaultValue="true"
+            android:persistent="false"
+            android:dependency="pref_lc_vibrate_override" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_sound_vibrate"
+            android:title="@string/pref_lc_sound_vibrate_title"
+            android:summary="@string/pref_lc_sound_vibrate_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_cat_lc_active_screen"
+        android:title="@string/lc_active_screen">
+
+        <ListPreference
+            android:key="pref_lc_active_screen_mode"
+            android:title="@string/pref_lc_active_screen_mode_title"
+            android:entries="@array/lc_active_screen_mode_entries"
+            android:entryValues="@array/lc_active_screen_mode_values"
+            android:defaultValue="DO_NOTHING"
+            android:persistent="false" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_active_screen_ignore_update"
+            android:title="@string/pref_lc_active_screen_ignore_update_title"
+            android:summary="@string/pref_lc_active_screen_ignore_update_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory 
+        android:key="pref_cat_lc_quiet_hours"
+        android:title="@string/lc_quiet_hours">
+
+        <CheckBoxPreference
+            android:key="pref_lc_qh_ignore"
+            android:title="@string/pref_lc_qh_ignore_title"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+        <EditTextPreference
+            android:key="pref_lc_qh_ignore_list"
+            android:title="@string/pref_lc_qh_ignore_list_title"
+            android:summary="@string/pref_lc_qh_ignore_list_summary"
+            android:persistent="false"
+            android:defaultValue=""
+            android:dependency="pref_lc_qh_ignore" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory 
+        android:key="pref_cat_lc_heads_up"
+        android:title="@string/pref_cat_lc_heads_up_title">
+
+        <ListPreference
+            android:key="pref_lc_headsup_mode"
+            android:title="@string/pref_lc_headsup_mode_title"
+            android:entries="@array/lc_heads_up_entries"
+            android:entryValues="@array/lc_heads_up_values"
+            android:defaultValue="DEFAULT"
+            android:persistent="false" />
+
+        <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
+            android:key="pref_lc_headsup_timeout"
+            android:title="@string/pref_heads_up_timeout_title"
+            android:summary="@string/pref_heads_up_timeout_summary"
+            minimum="0"
+            maximum="30"
+            interval="1"
+            monitorBoxEnabled="true"
+            monitorBoxUnit="s"
+            android:defaultValue="5"
+            android:persistent="false" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_headsup_dnd"
+            android:title="@string/pref_lc_headsup_dnd_title"
+            android:summary="@string/pref_lc_headsup_dnd_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory 
+        android:key="pref_cat_lc_visibility"
+        android:title="@string/pref_cat_lc_visibility_title">
+
+        <ListPreference
+            android:key="pref_lc_notif_visibility"
+            android:title="@string/pref_lc_notif_visibility_title"
+            android:summary="@string/pref_lc_notif_visibility_summary"
+            android:entries="@array/lc_notif_visibility_entries"
+            android:entryValues="@array/lc_notif_visibility_values"
+            android:defaultValue="DEFAULT"
+            android:persistent="false" />
+
+        <ListPreference
+            android:key="pref_lc_notif_visibility_ls"
+            android:title="@string/pref_lc_notif_visibility_ls_title"
+            android:entries="@array/lc_notif_visibility_ls_entries"
+            android:entryValues="@array/lc_notif_visibility_ls_values"
+            android:defaultValue="DEFAULT"
+            android:persistent="false" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_notif_hide_persistent"
+            android:title="@string/pref_lc_notif_hide_persistent_title"
+            android:summary="@string/pref_lc_notif_hide_persistent_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory 
+        android:key="pref_cat_lc_other"
+        android:title="@string/pref_cat_lc_other_title">
+
+        <CheckBoxPreference
+            android:key="pref_lc_progress_tracking"
+            android:title="@string/pref_lc_progress_tracking_title"
+            android:summary="@string/pref_lc_progress_tracking_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+        <CheckBoxPreference
+            android:key="pref_lc_ongoing"
+            android:title="@string/pref_lc_ongoing_title"
+            android:summary="@string/pref_lc_ongoing_summary"
+            android:defaultValue="false"
+            android:persistent="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

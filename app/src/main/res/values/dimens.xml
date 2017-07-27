@@ -1,0 +1,62 @@
+<!--
+ * Copyright (C) 2015 Peter Gregus for GravityBox Project (C3C076@xda)
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<resources>
+
+    <!-- ==================== pie controls ==================== -->
+    <!-- The distance a touch event must travel on the surface to trigger the pie control -->
+    <dimen name="pie_trigger_distance">8dp</dimen>
+    <!-- Padding between the pie controls and the screen border -->
+    <dimen name="pie_padding">16dp</dimen>
+    <!-- Radius of the snap points a the border of the screen -->
+    <dimen name="pie_snap_radius">30dp</dimen>
+    <!-- Stroke width of the snap points -->
+    <dimen name="pie_snap_outline">4dp</dimen>
+    <dimen name="pie_outline">2dp</dimen>
+    <!-- Text size of "normal" / small text on the pie control -->
+    <dimen name="pie_textsize">12sp</dimen>
+    <!-- Minimum size of imageviews placed within pie items -->
+    <dimen name="pie_item_size">30dp</dimen>
+    <dimen name="pie_navbar_radius">70dp</dimen>
+    <dimen name="pie_navbar_height">85dp</dimen>
+    <dimen name="pie_sysinfo_radius">165dp</dimen>
+    <dimen name="pie_sysinfo_height">85sp</dimen>
+
+    <!-- TouchInterceptor -->
+    <!-- height of a normal list item in edit playlist mode -->
+    <dimen name="normal_height">64dip</dimen>
+    <!-- height of an expanded list item in edit playlist mode -->
+    <dimen name="expanded_height">128dip</dimen>
+
+    <!-- Caller picture dimensions -->
+    <dimen name="caller_id_photo_width">360dp</dimen>
+    <dimen name="caller_id_photo_height">360dp</dimen>
+
+    <!-- Statusbar Battery -->
+    <dimen name="circle_battery_padding_left">0dp</dimen>
+    <dimen name="circle_battery_padding_right">0dp</dimen>
+    <dimen name="circle_battery_padding_right_op3t">4dp</dimen>
+    <dimen name="percent_text_padding_left">0dp</dimen>
+    <dimen name="percent_text_padding_left_op3t">4dp</dimen>
+    <dimen name="percent_text_padding_right">4dp</dimen>
+
+    <!-- QS DetailListAdapter -->
+    <dimen name="qs_detail_empty_text_size">14sp</dimen>
+
+    <!-- Navbar custom key image dimensions -->
+    <dimen name="navbar_custom_key_image_width">20dp</dimen>
+    <dimen name="navbar_custom_key_image_height">22dp</dimen>
+
+</resources>

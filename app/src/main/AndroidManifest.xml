@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * Copyright (C) 2013 Peter Gregus for GravityBox Project (C3C076@xda)
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+-->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.wrbug.gravitybox.nougat">
+
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.READ_LOGS"/>
+
+    <permission
+        android:name="gravitybox.permission.UNLOCK"
+        android:label="Permission to unlock GravityBox premium features"
+        android:protectionLevel="signature"/>
+    <uses-permission android:name="gravitybox.permission.UNLOCK"/>
+
+    <application
+        android:name="com.wrbug.gravitybox.nougat.GravityBoxApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.GravityBoxSettings"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS"/>
+            </intent-filter>
+        </activity>
+
+        <activity-alias
+            android:name="com.wrbug.gravitybox.nougat.GravityBoxSettingsAlias"
+            android:enabled="true"
+            android:label="@string/app_name"
+            android:targetActivity="com.wrbug.gravitybox.nougat.GravityBoxSettings">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.quicksettings.TileOrderActivity"
+            android:label="@string/quick_settings_title">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.shortcuts.ShortcutActivity"
+            android:excludeFromRecents="true"
+            android:label="@string/shortcut_activity_title"
+            android:launchMode="singleTop"
+            android:noHistory="true">
+            <intent-filter>
+                <action android:name="android.intent.action.CREATE_SHORTCUT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.shortcuts.LaunchActivity"
+            android:excludeFromRecents="true"
+            android:label="@string/shortcut_activity_title"
+            android:launchMode="singleTop"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="gravitybox.intent.action.LAUNCH_ACTION"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.ledcontrol.LedMainActivity"
+            android:label="@string/pref_led_control_title">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.ledcontrol.LedControlActivity"
+            android:label="@string/pref_unc_perapp_settings_title">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.ledcontrol.LedSettingsActivity">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.ledcontrol.ActiveScreenActivity"
+            android:label="@string/lc_active_screen">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.ledcontrol.QuietHoursActivity"
+            android:label="@string/lc_quiet_hours">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.UnlockActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:noHistory="true"
+            android:permission="gravitybox.permission.UNLOCK"
+            android:stateNotNeeded="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.PickImageActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+        </activity>
+
+        <activity
+            android:name="com.wrbug.gravitybox.nougat.WifiPriorityActivity"
+            android:label="@string/pref_wifi_priority_title">
+        </activity>
+
+        <service android:name="com.wrbug.gravitybox.nougat.GravityBoxService">
+            <intent-filter>
+                <action android:name="gravitybox.intent.action.TOGGLE_SYNC"/>
+                <action android:name="gravitybox.intent.action.GET_SYNC_STATUS"/>
+                <action android:name="gravitybox.intent.action.SET_QUIET_HOURS_MODE"/>
+            </intent-filter>
+        </service>
+
+        <service android:name="com.wrbug.gravitybox.nougat.TorchService">
+            <intent-filter>
+                <action android:name="gravitybox.intent.action.TOGGLE_TORCH"/>
+            </intent-filter>
+        </service>
+
+        <service android:name="com.wrbug.gravitybox.nougat.RecordingService">
+            <intent-filter>
+                <action android:name="gravitybox.intent.action.RECORDING_START"/>
+                <action android:name="gravitybox.intent.action.RECORDING_STOP"/>
+            </intent-filter>
+        </service>
+
+        <service android:name="com.wrbug.gravitybox.nougat.ScreenRecordingService">
+            <intent-filter>
+                <action android:name="gravitybox.intent.action.TOGGLE_SCREEN_RECORDING"/>
+            </intent-filter>
+        </service>
+
+        <service android:name="com.wrbug.gravitybox.nougat.KeyguardImageService"/>
+
+        <receiver
+            android:name="com.wrbug.gravitybox.nougat.BootCompletedReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.wrbug.gravitybox.nougat.UnlockActivity$UnlockReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="gravitybox.permission.UNLOCK">
+            <intent-filter>
+                <action android:name="gravitybox.intent.action.UNLOCK"/>
+                <action android:name="gravitybox.intent.action.CHECK_POLICY"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.wrbug.gravitybox.nougat.UnlockActivity$PkgManagerReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED"/>
+                <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED"/>
+
+                <data android:scheme="package"/>
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name="com.tencent.bugly.beta.ui.BetaActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|locale"
+            android:theme="@android:style/Theme.Translucent"/>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.fileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true"/>
+        <meta-data
+            android:name="xposedminversion"
+            android:value="78+"/>
+        <meta-data
+            android:name="xposeddescription"
+            android:value="GravityBox by C3C076@XDA , modify by WrBug"/>
+    </application>
+
+</manifest>
