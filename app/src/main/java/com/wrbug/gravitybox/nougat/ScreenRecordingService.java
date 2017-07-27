@@ -99,7 +99,7 @@ public class ScreenRecordingService extends Service {
         public void run() {
             try {
                 // Firstly, make sure we are able to get to pid field of ProcessImpl class
-                final Class<?> classProcImpl = Class.forName("java.lang.ProcessManager$ProcessImpl");
+                final Class<?> classProcImpl = Class.forName("java.lang.UNIXProcess");
                 final Field fieldPid = classProcImpl.getDeclaredField("pid");
                 fieldPid.setAccessible(true);
 
@@ -112,13 +112,16 @@ public class ScreenRecordingService extends Service {
 //                }
                 String prefVal = mPrefs.getString(GravityBoxSettings.PREF_KEY_SCREENRECORD_SIZE, "default");
                 if (!prefVal.equals("default")) {
-                    command.add("--size"); command.add(prefVal);
+                    command.add("--size");
+                    command.add(prefVal);
                 }
-                prefVal = String.valueOf(mPrefs.getInt(GravityBoxSettings.PREF_KEY_SCREENRECORD_BITRATE, 4)*1000000);
-                command.add("--bit-rate"); command.add(prefVal);
+                prefVal = String.valueOf(mPrefs.getInt(GravityBoxSettings.PREF_KEY_SCREENRECORD_BITRATE, 4) * 1000000);
+                command.add("--bit-rate");
+                command.add(prefVal);
                 if (!mUseStockBinary) {
-                    prefVal = String.valueOf(mPrefs.getInt(GravityBoxSettings.PREF_KEY_SCREENRECORD_TIMELIMIT, 3)*60);
-                    command.add("--time-limit"); command.add(prefVal);
+                    prefVal = String.valueOf(mPrefs.getInt(GravityBoxSettings.PREF_KEY_SCREENRECORD_TIMELIMIT, 3) * 60);
+                    command.add("--time-limit");
+                    command.add(prefVal);
                 }
                 if (mPrefs.getBoolean(GravityBoxSettings.PREF_KEY_SCREENRECORD_ROTATE, false)) {
                     command.add("--rotate");
@@ -159,7 +162,7 @@ public class ScreenRecordingService extends Service {
                 }
 
                 // Terminate the recording process
-                Runtime.getRuntime().exec(new String[]{ "kill", "-2", String.valueOf(pid) });
+                Runtime.getRuntime().exec(new String[]{"kill", "-2", String.valueOf(pid)});
             } catch (IOException e) {
                 // Notify something went wrong
                 Message msg = Message.obtain(mHandler, MSG_TASK_ERROR, 0, 0, e.getMessage());
@@ -185,7 +188,9 @@ public class ScreenRecordingService extends Service {
                 Log.e(TAG, "Error while starting the screenrecord process", e);
             }
         }
-    };
+    }
+
+    ;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -208,7 +213,7 @@ public class ScreenRecordingService extends Service {
                 } else if (msg.what == MSG_TASK_ERROR) {
                     mCaptureThread = null;
                     updateStatus(STATUS_ERROR, (String) msg.obj);
-                    Toast.makeText(ScreenRecordingService.this, 
+                    Toast.makeText(ScreenRecordingService.this,
                             R.string.screenrecord_toast_error, Toast.LENGTH_SHORT).show();
                 }
             }
@@ -217,28 +222,28 @@ public class ScreenRecordingService extends Service {
         mRecordingStatus = STATUS_IDLE;
 
         Notification.Builder builder = new Notification.Builder(this)
-            .setTicker(getString(R.string.screenrecord_notif_ticker))
-            .setContentTitle(getString(R.string.screenrecord_notif_title))
-            .setSmallIcon(R.drawable.ic_sysbar_camera)
-            .setWhen(System.currentTimeMillis());
+                .setTicker(getString(R.string.screenrecord_notif_ticker))
+                .setContentTitle(getString(R.string.screenrecord_notif_title))
+                .setSmallIcon(R.drawable.ic_sysbar_camera)
+                .setWhen(System.currentTimeMillis());
 
         Intent stopIntent = new Intent(this, ScreenRecordingService.class);
         stopIntent.setAction(ACTION_SCREEN_RECORDING_STOP);
         PendingIntent stopPendIntent = PendingIntent.getService(this, 0, stopIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent pointerIntent = new Intent(this, ScreenRecordingService.class)
-            .setAction(ACTION_TOGGLE_SHOW_TOUCHES);
+                .setAction(ACTION_TOGGLE_SHOW_TOUCHES);
         PendingIntent pointerPendIntent = PendingIntent.getService(this, 0, pointerIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent.FLAG_UPDATE_CURRENT);
 
         builder
-            .addAction(new Notification.Action.Builder(
-                    Icon.createWithResource(this, R.drawable.ic_media_stop),
-                    getString(R.string.screenrecord_notif_stop), stopPendIntent).build())
-            .addAction(new Notification.Action.Builder(
-                    Icon.createWithResource(this, R.drawable.ic_text_dot),
-                    getString(R.string.screenrecord_notif_pointer), pointerPendIntent).build());
+                .addAction(new Notification.Action.Builder(
+                        Icon.createWithResource(this, R.drawable.ic_media_stop),
+                        getString(R.string.screenrecord_notif_stop), stopPendIntent).build())
+                .addAction(new Notification.Action.Builder(
+                        Icon.createWithResource(this, R.drawable.ic_text_dot),
+                        getString(R.string.screenrecord_notif_pointer), pointerPendIntent).build());
 
         mRecordingNotif = builder.build();
     }
@@ -352,7 +357,7 @@ public class ScreenRecordingService extends Service {
             return;
         } else if (isProcessing()) {
             Log.e(TAG, "startScreenrecord: Previous recording is still being processed, " +
-            		"ignoring screenrecord start request");
+                    "ignoring screenrecord start request");
             Toast.makeText(this, R.string.screenrecord_toast_processing, Toast.LENGTH_SHORT).show();
             return;
         }
@@ -389,55 +394,57 @@ public class ScreenRecordingService extends Service {
         }
 
         // Give a second to screenrecord to process the file
-        mHandler.postDelayed(new Runnable() { public void run() {
-            mCaptureThread = null;
+        mHandler.postDelayed(new Runnable() {
+            public void run() {
+                mCaptureThread = null;
 
-            String fileName = "SCR_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".mp4";
+                String fileName = "SCR_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date()) + ".mp4";
 
-            File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-            if (!picturesDir.exists()) {
-                if (!picturesDir.mkdir()) {
-                    Log.e(TAG, "Cannot create Pictures directory");
-                    return;
+                File picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                if (!picturesDir.exists()) {
+                    if (!picturesDir.mkdir()) {
+                        Log.e(TAG, "Cannot create Pictures directory");
+                        return;
+                    }
                 }
-            }
 
-            File screenrecord = new File(picturesDir, "Screenrecord");
-            if (!screenrecord.exists()) {
-                if (!screenrecord.mkdir()) {
-                    Log.e(TAG, "Cannot create Screenrecord directory");
-                    return;
+                File screenrecord = new File(picturesDir, "Screenrecord");
+                if (!screenrecord.exists()) {
+                    if (!screenrecord.mkdir()) {
+                        Log.e(TAG, "Cannot create Screenrecord directory");
+                        return;
+                    }
                 }
-            }
 
-            File input = new File(TMP_PATH);
-            final File output = new File(screenrecord, fileName);
+                File input = new File(TMP_PATH);
+                final File output = new File(screenrecord, fileName);
 
-            Log.d(TAG, "Copying file to " + output.getAbsolutePath());
+                Log.d(TAG, "Copying file to " + output.getAbsolutePath());
 
-            try {
-                copyFileUsingStream(input, output);
-                input.delete();
-                Toast.makeText(ScreenRecordingService.this,
-                        String.format(getString(R.string.screenrecord_toast_saved), 
-                                output.getPath()), Toast.LENGTH_SHORT).show();
-            } catch (IOException e) {
-                Log.e(TAG, "Unable to copy output file", e);
-                Toast.makeText(ScreenRecordingService.this,
-                        R.string.screenrecord_toast_save_error, Toast.LENGTH_SHORT).show();
-            }
-
-            // Make it appear in gallery, run MediaScanner
-            MediaScannerConnection.scanFile(ScreenRecordingService.this,
-                new String[] { output.getAbsolutePath() }, null,
-                new MediaScannerConnection.OnScanCompletedListener() {
-                public void onScanCompleted(String path, Uri uri) {
-                    Log.i(TAG, "MediaScanner done scanning " + path);
+                try {
+                    copyFileUsingStream(input, output);
+                    input.delete();
+                    Toast.makeText(ScreenRecordingService.this,
+                            String.format(getString(R.string.screenrecord_toast_saved),
+                                    output.getPath()), Toast.LENGTH_SHORT).show();
+                } catch (IOException e) {
+                    Log.e(TAG, "Unable to copy output file", e);
+                    Toast.makeText(ScreenRecordingService.this,
+                            R.string.screenrecord_toast_save_error, Toast.LENGTH_SHORT).show();
                 }
-            });
 
-            updateStatus(STATUS_IDLE);
-        } }, 3000);
+                // Make it appear in gallery, run MediaScanner
+                MediaScannerConnection.scanFile(ScreenRecordingService.this,
+                        new String[]{output.getAbsolutePath()}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+                            public void onScanCompleted(String path, Uri uri) {
+                                Log.i(TAG, "MediaScanner done scanning " + path);
+                            }
+                        });
+
+                updateStatus(STATUS_IDLE);
+            }
+        }, 3000);
     }
 
     private String getBinaryPath() {
