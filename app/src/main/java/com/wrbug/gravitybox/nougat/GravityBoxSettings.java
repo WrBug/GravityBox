@@ -1774,6 +1774,9 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             }
 
             // Remove MTK specific preferences for non-MTK devices
+            if (sSystemProperties == null) {
+                sSystemProperties = new SystemProperties(new Bundle());
+            }
             if (!Utils.isMtkDevice()) {
                 mPrefCatStatusbar.removePreference(mPrefDisableRoamingIndicators);
                 if (!sSystemProperties.hasMsimSupport) {
