@@ -47,6 +47,7 @@ public abstract class BaseTile implements QsEventListener {
     public static final String CLASS_BASE_TILE = "com.android.systemui.qs.QSTile";
     public static final String CLASS_TILE_STATE = "com.android.systemui.qs.QSTile.State";
     public static final String CLASS_TILE_VIEW = "com.android.systemui.qs.QSTileView";
+    public static final String CLASS_QS_ICON_VIEW = "com.android.systemui.qs.QSIconView";
     public static final String CLASS_SIGNAL_TILE_VIEW = "com.android.systemui.qs.SignalTileView";
     public static final String CLASS_RESOURCE_ICON = CLASS_BASE_TILE + ".ResourceIcon";
 

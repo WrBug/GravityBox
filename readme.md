@@ -1,9 +1,13 @@
 # GravityBoxForAndroidNougat
 
-> Xposed GravityBox Module  for devices running Android 7.1 (Nougat)
+> Xposed GravityBox Module  for devices running Android 7.0/7.1 (Nougat)
 
 
 GravityBox[NG] is base on [GravityBox[MM]][1] , the current version is beta and I'm fitting the Android 7.1 devices now.
+
+## Download
+
+[https://www.coolapk.com/apk/com.wrbug.gravitybox.nougat][4]
 
 ## Release Note
 
@@ -60,3 +64,4 @@ GravityBox[NG] is base on [GravityBox[MM]][1] , the current version is beta and 
 [1]: https://github.com/GravityBox/GravityBox/tree/marshmallow
 [2]: https://github.com/rovo89/android_art
 [3]: https://github.com/abforce/xposed_art_n
+[4]: https://www.coolapk.com/apk/com.wrbug.gravitybox.nougat

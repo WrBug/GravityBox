@@ -19,6 +19,7 @@ import com.wrbug.gravitybox.nougat.quicksettings.TileOrderActivity;
 
 import android.content.Context;
 import android.content.res.XModuleResources;
+
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
@@ -78,7 +79,7 @@ public class ModQsTiles {
     private static QsQuickPulldownHandler mQuickPulldownHandler;
     private static QsPanel mQsPanel;
     private static QsPanelQuick mQsPanelQuick;
-    private static Map<String,Object> mTiles = new HashMap<>();
+    private static Map<String, Object> mTiles = new HashMap<>();
 
     public static void initResources(final InitPackageResourcesParam resparam) {
         XModuleResources modRes = XModuleResources.createInstance(GravityBox.MODULE_PATH, resparam.res);
@@ -103,124 +104,121 @@ public class ModQsTiles {
 
             XposedHelpers.findAndHookMethod(classTileHost, "onTuningChanged",
                     String.class, String.class, new XC_MethodHook() {
-                @SuppressWarnings("unchecked")
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    if (!TILES_SETTING.equals(param.args[0])) return;
-                    if (Utils.isOxygenOs35Rom()) {
-                        param.args[1] = OnePlus3TTile.ALL_TILES;
-                    }
+                        @SuppressWarnings("unchecked")
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            if (!TILES_SETTING.equals(param.args[0])) return;
+                            if (Utils.isOxygenOs35Rom()) {
+                                param.args[1] = OnePlus3TTile.ALL_TILES;
+                            }
 
-                    if (mEventDistributor != null) {
-                        for (Object tile : mTiles.values()) {
-                            XposedHelpers.callMethod(tile, "handleDestroy");
+                            if (mEventDistributor != null) {
+                                for (Object tile : mTiles.values()) {
+                                    XposedHelpers.callMethod(tile, "handleDestroy");
+                                }
+                                mTiles.clear();
+                                Map<String, Object> tileMap = (Map<String, Object>)
+                                        XposedHelpers.getObjectField(param.thisObject, "mTiles");
+                                tileMap.clear();
+                                ((List<?>) XposedHelpers.getObjectField(param.thisObject, "mTileSpecs")).clear();
+                            }
                         }
-                        mTiles.clear();
-                        Map<String, Object> tileMap = (Map<String, Object>)
-                                XposedHelpers.getObjectField(param.thisObject, "mTiles");
-                        tileMap.clear();
-                        ((List<?>)XposedHelpers.getObjectField(param.thisObject, "mTileSpecs")).clear();
-                    }
-                }
-                @SuppressWarnings("unchecked")
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    if (!TILES_SETTING.equals(param.args[0])) return;
 
-                    if (mEventDistributor == null) {
-                        mEventDistributor = new QsTileEventDistributor(param.thisObject, prefs);
-                        mQsPanel.setEventDistributor(mEventDistributor);
-                        if (DEBUG) log("Tile event distributor created");
-                    }
+                        @SuppressWarnings("unchecked")
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            if (!TILES_SETTING.equals(param.args[0])) return;
 
-                    Map<String, Object> tileMap = (Map<String, Object>)
-                            XposedHelpers.getObjectField(param.thisObject, "mTiles");
-                    Map<String, Object> gbTileMap = new HashMap<String,Object>();
-                    Context context = (Context) XposedHelpers.callMethod(param.thisObject, "getContext");
+                            if (mEventDistributor == null) {
+                                mEventDistributor = new QsTileEventDistributor(param.thisObject, prefs);
+                                mQsPanel.setEventDistributor(mEventDistributor);
+                                if (DEBUG) log("Tile event distributor created");
+                            }
 
-                    // prepare AOSP tile wrappers
-                    for (Entry<String,Object> entry : tileMap.entrySet()) {
-                        AospTile aospTile = AospTile.create(param.thisObject, entry.getValue(), 
-                                entry.getKey(), prefs, mEventDistributor);
-                        if (aospTile != null) {
-                            mTiles.put(aospTile.getKey(), aospTile.getTile());
-                            gbTileMap.put(aospTile.getKey(), aospTile);
+                            Map<String, Object> tileMap = (Map<String, Object>)
+                                    XposedHelpers.getObjectField(param.thisObject, "mTiles");
+                            Map<String, Object> gbTileMap = new HashMap<String, Object>();
+                            Context context = (Context) XposedHelpers.callMethod(param.thisObject, "getContext");
+
+                            // prepare AOSP tile wrappers
+                            for (Entry<String, Object> entry : tileMap.entrySet()) {
+                                AospTile aospTile = AospTile.create(param.thisObject, entry.getValue(),
+                                        entry.getKey(), prefs, mEventDistributor);
+                                if (aospTile != null) {
+                                    mTiles.put(aospTile.getKey(), aospTile.getTile());
+                                    gbTileMap.put(aospTile.getKey(), aospTile);
+                                }
+                            }
+
+                            // prepare GB tiles
+                            for (String key : GB_TILE_KEYS) {
+                                QsTile tile = QsTile.create(param.thisObject, key, prefs, mEventDistributor);
+                                if (tile != null) {
+                                    mTiles.put(key, tile.getTile());
+                                    gbTileMap.put(key, tile);
+                                }
+                            }
+
+                            // sort tiles
+                            LinkedHashMap<String, Object> orderedMap = new LinkedHashMap<String, Object>();
+                            String[] orderedKeys = prefs.getString(
+                                    TileOrderActivity.PREF_KEY_TILE_ENABLED,
+                                    TileOrderActivity.getDefaultTileList(
+                                            Utils.getGbContext(context))).split(",");
+                            for (String key : orderedKeys) {
+                                for (Entry<String, Object> entry : gbTileMap.entrySet()) {
+                                    if (entry.getValue() instanceof AospTile) {
+                                        AospTile t = (AospTile) entry.getValue();
+                                        if (key.equals(t.getKey())) {
+                                            orderedMap.put(t.getAospKey(), tileMap.get(t.getAospKey()));
+                                            tileMap.remove(t.getAospKey());
+                                            if (DEBUG) log("orderedMap: added " + t.getKey());
+                                            break;
+                                        }
+                                    } else {
+                                        QsTile t = (QsTile) entry.getValue();
+                                        if (key.equals(t.getKey())) {
+                                            orderedMap.put(key, t.getTile());
+                                            gbTileMap.remove(key);
+                                            if (DEBUG) log("orderedMap: added " + key);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // add left-overs
+                            for (Entry<String, Object> entry : tileMap.entrySet()) {
+                                orderedMap.put(entry.getKey(), entry.getValue());
+                                if (DEBUG)
+                                    log("orderedMap: added disabled or unknown AOSP tile: " + entry.getKey());
+                            }
+                            for (Entry<String, Object> entry : gbTileMap.entrySet()) {
+                                if (entry.getValue() instanceof QsTile) {
+                                    orderedMap.put(entry.getKey(), ((QsTile) entry.getValue()).getTile());
+                                    if (DEBUG)
+                                        log("orderedMap: added disabled GB tile: " + entry.getKey());
+                                }
+                            }
+
+                            // put all tiles into host tile map
+                            tileMap.clear();
+                            tileMap.putAll(orderedMap);
+                            List<?> cb = (List<?>) XposedHelpers.getObjectField(param.thisObject, "mCallbacks");
+                            if (cb != null && !cb.isEmpty()) {
+                                for (Object o : cb) {
+                                    XposedHelpers.callMethod(o, "onTilesChanged");
+                                }
+                            }
+
+                            if (DEBUG) log("Tiles created");
+
+                            if (mQuickPulldownHandler == null) {
+                                mQuickPulldownHandler = new QsQuickPulldownHandler(context, prefs, mEventDistributor);
+                            }
+                            mQsPanel.updateResources();
                         }
-                    }
-
-                    // prepare GB tiles
-                    for (String key : GB_TILE_KEYS) {
-                        QsTile tile = QsTile.create(param.thisObject, key, prefs, mEventDistributor);
-                        if (tile != null) {
-                            mTiles.put(key, tile.getTile());
-                            gbTileMap.put(key, tile);
-                        }
-                    }
-
-                    // sort tiles
-                    LinkedHashMap<String, Object> orderedMap = new LinkedHashMap<String,Object>();
-                    String[] orderedKeys = prefs.getString(
-                            TileOrderActivity.PREF_KEY_TILE_ENABLED,
-                            TileOrderActivity.getDefaultTileList(
-                                    Utils.getGbContext(context))).split(",");
-                    for (String key : orderedKeys) {
-                         for (Entry<String, Object> entry : gbTileMap.entrySet()) {
-                             if (entry.getValue() instanceof AospTile) {
-                                 AospTile t = (AospTile) entry.getValue();
-                                 if (key.equals(t.getKey())) {
-                                     orderedMap.put(t.getAospKey(), tileMap.get(t.getAospKey()));
-                                     tileMap.remove(t.getAospKey());
-                                     if (DEBUG) log("orderedMap: added " + t.getKey());
-                                     break;
-                                 }
-                             } else {
-                                 QsTile t = (QsTile) entry.getValue();
-                                 if (key.equals(t.getKey())) {
-                                     orderedMap.put(key, t.getTile());
-                                     gbTileMap.remove(key);
-                                     if (DEBUG) log("orderedMap: added " + key);
-                                     break;
-                                 }
-                             }
-                         }
-                    }
-
-                    // add left-overs
-                    for (Entry<String,Object> entry : tileMap.entrySet()) {
-                        orderedMap.put(entry.getKey(), entry.getValue());
-                        if (DEBUG) log("orderedMap: added disabled or unknown AOSP tile: " + entry.getKey());
-                    }
-                    for (Entry<String,Object> entry : gbTileMap.entrySet()) {
-                        if (entry.getValue() instanceof QsTile) {
-                            orderedMap.put(entry.getKey(), ((QsTile)entry.getValue()).getTile());
-                            if (DEBUG) log("orderedMap: added disabled GB tile: " + entry.getKey());
-                        }
-                    }
-
-                    // put all tiles into host tile map
-                    tileMap.clear();
-                    tileMap.putAll(orderedMap);
-
-                    if (Utils.isOxygenOs35Rom()) {
-                        List<?> cbs = (List<?>) XposedHelpers.getObjectField(param.thisObject, "mCallbacks");
-                        for (int i = 0; i < cbs.size(); i++) {
-                            XposedHelpers.callMethod(cbs.get(i), "onTilesChanged");
-                        }
-                    } else {
-                        Object cb = XposedHelpers.getObjectField(param.thisObject, "mCallback");
-                        if (cb != null) {
-                            XposedHelpers.callMethod(cb, "onTilesChanged");
-                        }
-                    }
-
-                    if (DEBUG) log("Tiles created");
-
-                    if (mQuickPulldownHandler == null) {
-                        mQuickPulldownHandler = new QsQuickPulldownHandler(context, prefs, mEventDistributor);
-                    }
-                    mQsPanel.updateResources();
-                }
-            });
+                    });
         } catch (Throwable t) {
             XposedBridge.log(t);
         }

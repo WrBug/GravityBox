@@ -30,7 +30,7 @@ public abstract class AospTile extends BaseTile implements QsEventListener {
     protected Unhook mHandleClickHook;
 
     public static AospTile create(Object host, Object tile, String aospKey, XSharedPreferences prefs,
-            QsTileEventDistributor eventDistributor) throws Throwable {
+                                  QsTileEventDistributor eventDistributor) throws Throwable {
         // AOSP
         if (AirplaneModeTile.AOSP_KEY.equals(aospKey))
             return new AirplaneModeTile(host, tile, prefs, eventDistributor);
@@ -59,7 +59,7 @@ public abstract class AospTile extends BaseTile implements QsEventListener {
         else if (DoNotDisturbTile.AOSP_KEY.equals(aospKey))
             return new DoNotDisturbTile(host, tile, prefs, eventDistributor);
 
-        // MediaTek
+            // MediaTek
         else if (MtkAudioProfileTile.AOSP_KEY.equals(aospKey))
             return new MtkAudioProfileTile(host, tile, prefs, eventDistributor);
         else if (MtkMobileDataTile.AOSP_KEY.equals(aospKey))
@@ -71,19 +71,19 @@ public abstract class AospTile extends BaseTile implements QsEventListener {
 
         // Xperia
         if (Utils.isXperiaDevice() &&
-            XperiaTile.XPERIA_KEYS.contains(aospKey)) {
+                XperiaTile.XPERIA_KEYS.contains(aospKey)) {
             return new XperiaTile(host, aospKey, tile, prefs, eventDistributor);
         }
 
         // Moto
         if (Utils.isMotoXtDevice() &&
-            MotoTile.MOTO_KEYS.contains(aospKey)) {
+                MotoTile.MOTO_KEYS.contains(aospKey)) {
             return new MotoTile(host, aospKey, tile, prefs, eventDistributor);
         }
 
         // OnePlus3T
         if (Utils.isOxygenOs35Rom() &&
-            OnePlus3TTile.OP3T_KEYS.contains(aospKey)) {
+                OnePlus3TTile.OP3T_KEYS.contains(aospKey)) {
             return new OnePlus3TTile(host, aospKey, tile, prefs, eventDistributor);
         }
 
@@ -94,7 +94,7 @@ public abstract class AospTile extends BaseTile implements QsEventListener {
     }
 
     protected AospTile(Object host, String key, Object tile, XSharedPreferences prefs,
-            QsTileEventDistributor eventDistributor) throws Throwable {
+                       QsTileEventDistributor eventDistributor) throws Throwable {
         super(host, key, prefs, eventDistributor);
 
         mTile = tile;
@@ -134,35 +134,37 @@ public abstract class AospTile extends BaseTile implements QsEventListener {
             ClassLoader cl = mContext.getClassLoader();
 
             mHandleUpdateStateHook = XposedHelpers.findAndHookMethod(
-                    mTile.getClass().getName(), cl,"handleUpdateState",
+                    mTile.getClass().getName(), cl, "handleUpdateState",
                     BaseTile.CLASS_TILE_STATE, Object.class, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    if (mKey.equals(XposedHelpers.getAdditionalInstanceField(
-                            param.thisObject, BaseTile.TILE_KEY_NAME))) {
-                        handleUpdateState(param.args[0], param.args[1]);
-                    }
-                }
-            });
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            log(mTile.getClass().toString());
+                            if (mKey.equals(XposedHelpers.getAdditionalInstanceField(
+                                    param.thisObject, BaseTile.TILE_KEY_NAME))) {
+                                handleUpdateState(param.args[0], param.args[1]);
+                            }
+                        }
+                    });
 
             mHandleClickHook = XposedHelpers.findAndHookMethod(
                     mTile.getClass().getName(), cl, "handleClick", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    if (mKey.equals(XposedHelpers.getAdditionalInstanceField(
-                            param.thisObject, BaseTile.TILE_KEY_NAME)) &&
-                            onBeforeHandleClick()) {
-                        param.setResult(null);
-                    }
-                }
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    if (mKey.equals(XposedHelpers.getAdditionalInstanceField(
-                            param.thisObject, BaseTile.TILE_KEY_NAME))) {
-                        handleClick();
-                    }
-                }
-            });
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            if (mKey.equals(XposedHelpers.getAdditionalInstanceField(
+                                    param.thisObject, BaseTile.TILE_KEY_NAME)) &&
+                                    onBeforeHandleClick()) {
+                                param.setResult(null);
+                            }
+                        }
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            if (mKey.equals(XposedHelpers.getAdditionalInstanceField(
+                                    param.thisObject, BaseTile.TILE_KEY_NAME))) {
+                                handleClick();
+                            }
+                        }
+                    });
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
