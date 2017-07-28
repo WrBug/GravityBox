@@ -33,6 +33,7 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
     public static String MODULE_PATH = null;
     private static XSharedPreferences prefs;
     private static final String[] LAUNCH_PACKAGE_NAME = {"android"};
+    private static final int[] SUPPORT_SDK = {24, 25};
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
@@ -63,7 +64,7 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
         XposedBridge.log("GB:Android Release: " + Build.VERSION.RELEASE);
         XposedBridge.log("GB:ROM: " + Build.DISPLAY);
 
-        if (Build.VERSION.SDK_INT != 25) {
+        if (!ArrayUtils.arrayHas(SUPPORT_SDK, Build.VERSION.SDK_INT)) {
             XposedBridge.log("!!! GravityBox you are running is not designed for "
                     + "Android SDK " + Build.VERSION.SDK_INT + " !!!");
             return;
@@ -86,7 +87,7 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
 
     @Override
     public void handleInitPackageResources(InitPackageResourcesParam resparam) throws Throwable {
-        if (Build.VERSION.SDK_INT != 25) {
+        if (!ArrayUtils.arrayHas(SUPPORT_SDK, Build.VERSION.SDK_INT)) {
             return;
         }
 
@@ -114,7 +115,7 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
-        if (Build.VERSION.SDK_INT != 25) {
+        if (!ArrayUtils.arrayHas(SUPPORT_SDK, Build.VERSION.SDK_INT)) {
             return;
         }
         if (ArrayUtils.arrayHas(LAUNCH_PACKAGE_NAME, lpparam.packageName) &&

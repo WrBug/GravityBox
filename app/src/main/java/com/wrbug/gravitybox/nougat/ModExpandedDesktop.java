@@ -382,9 +382,9 @@ public class ModExpandedDesktop {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         int[] navigationBarWidthForRotation = (int[]) XposedHelpers.getObjectField(
-                                param.thisObject, "mNavigationBarWidthForRotation");
+                                param.thisObject, "mNavigationBarWidthForRotationDefault");
                         int[] navigationBarHeightForRotation = (int[]) XposedHelpers.getObjectField(
-                                param.thisObject, "mNavigationBarHeightForRotation");
+                                param.thisObject, "mNavigationBarHeightForRotationDefault");
                         int portraitRotation = XposedHelpers.getIntField(param.thisObject, "mPortraitRotation");
                         int landscapeRotation = XposedHelpers.getIntField(param.thisObject, "mLandscapeRotation");
                         if (navigationBarWidthForRotation != null &&

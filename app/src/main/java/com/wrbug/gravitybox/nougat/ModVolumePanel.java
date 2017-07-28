@@ -27,6 +27,7 @@ import android.content.res.XResources;
 import android.media.AudioManager;
 import android.view.View;
 import android.widget.ImageButton;
+
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
@@ -69,12 +70,11 @@ public class ModVolumePanel {
                 if (intent.hasExtra(GravityBoxSettings.EXTRA_TIMEOUT)) {
                     mTimeout = intent.getIntExtra(GravityBoxSettings.EXTRA_TIMEOUT, 0);
                 }
-            }
-            else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_LINK_VOLUMES_CHANGED)) {
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_LINK_VOLUMES_CHANGED)) {
                 mVolumesLinked = intent.getBooleanExtra(GravityBoxSettings.EXTRA_LINKED, true);
             }
         }
-        
+
     };
 
     public static void initResources(XSharedPreferences prefs, InitPackageResourcesParam resparam) {
@@ -144,33 +144,46 @@ public class ModVolumePanel {
                     }
                 });
             }
-
-            XposedHelpers.findAndHookMethod(classVolumePanel, "shouldBeVisibleH",
-                    CLASS_VOLUME_ROW, boolean.class, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                    if (XposedHelpers.getAdditionalInstanceField(
-                            param.args[0], "gbNotifSlider") != null) {
-                        boolean visible = (boolean) param.getResult();
-                        visible &= !mVolumesLinked;
-                        param.setResult(visible);
-                    }
-                }
-            });
-
+            if (XposedHelpers.findMethodExactIfExists(classVolumePanel, "shouldBeVisibleH", CLASS_VOLUME_ROW, boolean.class) != null) {
+                XposedHelpers.findAndHookMethod(classVolumePanel, "shouldBeVisibleH",
+                        CLASS_VOLUME_ROW, boolean.class, new XC_MethodHook() {
+                            @Override
+                            protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                                if (XposedHelpers.getAdditionalInstanceField(
+                                        param.args[0], "gbNotifSlider") != null) {
+                                    boolean visible = (boolean) param.getResult();
+                                    visible &= !mVolumesLinked;
+                                    param.setResult(visible);
+                                }
+                            }
+                        });
+            } else {
+                XposedHelpers.findAndHookMethod(classVolumePanel, "isVisibleH",
+                        CLASS_VOLUME_ROW, boolean.class, new XC_MethodHook() {
+                            @Override
+                            protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                                if (XposedHelpers.getAdditionalInstanceField(
+                                        param.args[0], "gbNotifSlider") != null) {
+                                    boolean visible = (boolean) param.getResult();
+                                    visible &= !mVolumesLinked;
+                                    param.setResult(visible);
+                                }
+                            }
+                        });
+            }
             XposedHelpers.findAndHookMethod(classVolumePanel, "updateVolumeRowSliderH",
                     CLASS_VOLUME_ROW, boolean.class, int.class, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                    if (!mVolumesLinked && XposedHelpers.getAdditionalInstanceField(
-                            param.args[0], "gbNotifSlider") != null) {
-                        View slider = (View) XposedHelpers.getObjectField(param.args[0], "slider");
-                        slider.setEnabled(isRingerSliderEnabled());
-                        View icon = (View) XposedHelpers.getObjectField(param.args[0], "icon");
-                        icon.setEnabled(slider.isEnabled());
-                    }
-                }
-            });
+                        @Override
+                        protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
+                            if (!mVolumesLinked && XposedHelpers.getAdditionalInstanceField(
+                                    param.args[0], "gbNotifSlider") != null) {
+                                View slider = (View) XposedHelpers.getObjectField(param.args[0], "slider");
+                                slider.setEnabled(isRingerSliderEnabled());
+                                View icon = (View) XposedHelpers.getObjectField(param.args[0], "icon");
+                                icon.setEnabled(slider.isEnabled());
+                            }
+                        }
+                    });
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
@@ -182,7 +195,7 @@ public class ModVolumePanel {
                     AudioManager.STREAM_NOTIFICATION,
                     mIconNotifResId, mIconNotifMuteResId, true);
             List<?> rows = (List<?>) XposedHelpers.getObjectField(mVolumePanel, "mRows");
-            Object row = rows.get(rows.size()-1);
+            Object row = rows.get(rows.size() - 1);
             XposedHelpers.setAdditionalInstanceField(row, "gbNotifSlider", true);
         } catch (Throwable t) {
             XposedBridge.log(t);
@@ -194,7 +207,7 @@ public class ModVolumePanel {
             List<?> rows = (List<?>) XposedHelpers.getObjectField(mVolumePanel, "mRows");
             for (Object row : rows) {
                 if (XposedHelpers.getIntField(row, "stream") == AudioManager.STREAM_RING) {
-                    return ((View)XposedHelpers.getObjectField(row, "slider")).isEnabled();
+                    return ((View) XposedHelpers.getObjectField(row, "slider")).isEnabled();
                 }
             }
             return true;

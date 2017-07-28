@@ -1103,12 +1103,12 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
         }
 
         super.onCreate(savedInstanceState);
-        int permissionCheck = ActivityCompat.checkSelfPermission(this, permission.READ_PHONE_STATE);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{permission.READ_PHONE_STATE}, REQUEST_READ_PHONE_STATE);
-        } else {
-            initWebView();
-        }
+//        int permissionCheck = ActivityCompat.checkSelfPermission(this, permission.READ_PHONE_STATE);
+//        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(this, new String[]{permission.READ_PHONE_STATE}, REQUEST_READ_PHONE_STATE);
+//        } else {
+//            initWebView();
+//        }
         // fix folder permissions
         SettingsManager.getInstance(this).fixFolderPermissionsAsync();
 
@@ -1809,6 +1809,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                 mPrefCatStatusbar.removePreference(mPrefCatStatusbarQs);
                 mPrefCatNotifDrawerStyle.removePreference(mPrefNotifExpandAll);
             }
+            mPrefCatStatusbar.removePreference(mPrefCatStatusbarQs);
 
             // Remove Moto XT preferences
             if (Utils.isMotoXtDevice()) {

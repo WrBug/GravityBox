@@ -22,4 +22,16 @@ public class ArrayUtils {
         }
         return false;
     }
+
+    public static boolean arrayHas(int[] array, int value) {
+        if (array == null || array.length == 0) {
+            return false;
+        }
+        for (int i : array) {
+            if (value == i) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
