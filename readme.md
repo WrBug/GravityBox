@@ -7,6 +7,16 @@ GravityBox[NG] is base on [GravityBox[MM]][1] , the current version is beta and 
 
 ## Release Note
 
+### v1.0.2-beta ()
+
+- fit the android 7.0 devices
+- Add to support OxygenOs-Dev
+- Add to support HydrogenOs
+- fix Power Menu Screen record
+- hide navigation bar quick setting(fixing...)
+- fix Auto Show Dialpad
+
+
 ### v1.0.1-beta (2017-7-24)
 
 - Add Bugly Crash report

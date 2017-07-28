@@ -35,7 +35,7 @@ public class ModDialer25 {
     private static final String TAG = "GB:ModDialer25";
 
     private static final String CLASS_DIALTACTS_APP_ACTIVITY = "com.android.dialer.app.DialtactsActivity";
-    private static final String CLASS_DIALTACTS_ACTIVITY = "com.android.dialer.app.DialtactsActivity";
+    private static final String CLASS_DIALTACTS_ACTIVITY = "com.android.dialer.DialtactsActivity";
     private static final String CLASS_DIALTACTS_APP_FRAGMENT = "com.android.dialer.app.dialpad.DialpadFragment";
     private static final String CLASS_DIALTACTS_FRAGMENT = "com.android.dialer.dialpad.DialpadFragment";
     private static final String CLASS_DIALTACTS_ACTIVITY_GOOGLE =

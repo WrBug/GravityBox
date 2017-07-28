@@ -10,17 +10,18 @@ android {
         minSdkVersion 24
         maxSdkVersion 25
         targetSdkVersion 23
-        versionCode 10010
-        versionName "1.0.1 -beta"
+        versionCode 10011
+        versionName "v1.0.1.1"
     }
     buildTypes {
         debug {
-            versionNameSuffix "-debug"
+            versionNameSuffix "-Dev"
             if (signingConfigs.releaseConfig != null) {
                 signingConfig signingConfigs.releaseConfig
             }
         }
         release {
+            versionNameSuffix "-Beta"
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
             if (signingConfigs.releaseConfig != null) {
@@ -29,7 +30,19 @@ android {
         }
     }
 }
+afterEvaluate {
+    android.applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.outputFile = new File(
+                    output.outputFile.parent + "/${variant.buildType.name}",
+                    "GravityBox[NG]-${variant.versionName}-${packageTime()}.apk")
+        }
+    }
+}
 
+def packageTime() {
+    return new Date().format("yyyyMMdd", TimeZone.getDefault())
+}
 
 dependencies {
     provided 'de.robv.android.xposed:api:82'

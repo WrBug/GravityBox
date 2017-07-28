@@ -138,15 +138,15 @@ public class ModLowBatteryWarning {
             if (DEBUG) log("init");
 
             // for debugging purposes - simulate low battery even if it's not
-            if (DEBUG) {
-                Class<?> classPowerUI = findClass(CLASS_POWER_UI, classLoader);
-                findAndHookMethod(classPowerUI, "findBatteryLevelBucket", int.class, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        param.setResult(-1);
-                    }
-                });
-            }
+//            if (DEBUG) {
+//                Class<?> classPowerUI = findClass(CLASS_POWER_UI, classLoader);
+//                findAndHookMethod(classPowerUI, "findBatteryLevelBucket", int.class, new XC_MethodHook() {
+//                    @Override
+//                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+//                        param.setResult(-1);
+//                    }
+//                });
+//            }
 
             Class<?> classPowerWarnings = findClass(CLASS_POWER_WARNINGS, classLoader);
             findAndHookMethod(classPowerWarnings, "updateNotification", new XC_MethodHook() {

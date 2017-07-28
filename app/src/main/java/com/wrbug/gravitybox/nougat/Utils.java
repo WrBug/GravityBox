@@ -301,9 +301,14 @@ public class Utils {
     public static boolean isOxygenOs45Rom() {
         if (mIsOxygenOs45Rom == null) {
             String version = SystemProp.get("ro.oxygen.version", "0");
-            mIsOxygenOs45Rom = version.startsWith("4.5");
+            mIsOxygenOs45Rom = version.startsWith("4.5") || version.contains("_O2_Open_") || isOnePlusSystem();
         }
         return mIsOxygenOs45Rom;
+    }
+
+    private static boolean isOnePlusSystem() {
+        String version = SystemProp.get("ro.build.ota.versionname", "");
+        return version.contains("Oxygen") || version.contains("Hydrogen");
     }
 
     public static boolean hasGeminiSupport() {
