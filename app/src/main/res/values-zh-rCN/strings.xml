@@ -1859,6 +1859,7 @@
     <string name="pref_battery_percent_text_position_title">状态栏位置</string>
     <string name="pref_battery_percent_text_position_summary">需要重新启动</string>
     <string name="battery_percent_text_position_right">电池图标在右侧</string>
+    <string name="battery_percent_text_position_center">在电池图标中间</string>
     <string name="battery_percent_text_position_left">电池图标在左侧</string>
 
     <!-- Disable Imprint vibrations -->

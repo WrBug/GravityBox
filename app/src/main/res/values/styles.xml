@@ -20,30 +20,33 @@
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
     <!-- Light application theme -->
-    <style name="AppBaseTheme" parent="android:Theme.Material.Light.DarkActionBar" />
-    <style name="DialogBaseTheme" parent="android:Theme.Material.Light.Dialog" />
-    <style name="AlertDialogBaseTheme" parent="android:Theme.Material.Light.Dialog.Alert" />
+    <style name="AppBaseTheme" parent="android:Theme.Material.Light.DarkActionBar"/>
+
+    <style name="DialogBaseTheme" parent="android:Theme.Material.Light.Dialog"/>
+
+    <style name="AlertDialogBaseTheme" parent="android:Theme.Material.Light.Dialog.Alert"/>
 
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
-        <item name="android:colorPrimary">#ff30a6cb</item>
-        <item name="android:colorPrimaryDark">#ff2788a6</item>
-        <item name="android:colorAccent">#ff30a6cb</item>
+        <item name="android:colorPrimary">#eba9a9</item>
+        <item name="android:colorPrimaryDark">#e69797</item>
+        <item name="android:colorAccent">#e9a1a1</item>
         <item name="android:dialogTheme">@style/DialogStyle</item>
         <item name="android:alertDialogTheme">@style/AlertDialogStyle</item>
     </style>
 
-    <style name="DialogStyle" parent="DialogBaseTheme" >
+    <style name="DialogStyle" parent="DialogBaseTheme">
         <item name="android:colorAccent">#ff30a6cb</item>
     </style>
 
-    <style name="AlertDialogStyle" parent="AlertDialogBaseTheme" >
+    <style name="AlertDialogStyle" parent="AlertDialogBaseTheme">
         <item name="android:colorAccent">#ff30a6cb</item>
     </style>
 
     <!-- Dark application theme -->
-    <style name="AppBaseThemeDark" parent="android:Theme.Material" />
-    <style name="AppThemeDark" parent="AppBaseThemeDark" />
+    <style name="AppBaseThemeDark" parent="android:Theme.Material"/>
+
+    <style name="AppThemeDark" parent="AppBaseThemeDark"/>
 
     <!-- AppLauncher labels -->
     <style name="AppLauncherTextView">
@@ -68,7 +71,7 @@
     </style>
 
     <!-- QS DetailListAdapter -->
-    <style name="TextAppearance" />
+    <style name="TextAppearance"/>
 
     <style name="TextAppearance.QS">
         <item name="android:textStyle">normal</item>

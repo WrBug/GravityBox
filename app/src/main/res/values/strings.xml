@@ -1844,6 +1844,7 @@
     <string name="pref_battery_percent_text_position_title">Position in status bar</string>
     <string name="pref_battery_percent_text_position_summary">Requires reboot</string>
     <string name="battery_percent_text_position_right">Right of battery icon</string>
+    <string name="battery_percent_text_position_center">Center of battery icon</string>
     <string name="battery_percent_text_position_left">Left of battery icon</string>
 
     <!-- Disable Imprint vibrations -->

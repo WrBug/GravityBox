@@ -29,6 +29,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -105,6 +106,7 @@ public class StatusbarClock implements IconManagerListener, BroadcastSubReceiver
             public void onViewAttachedToWindow(View v) {
                 updateSecondsHandler();
             }
+
             @Override
             public void onViewDetachedFromWindow(View v) {
                 updateSecondsHandler();
@@ -141,7 +143,7 @@ public class StatusbarClock implements IconManagerListener, BroadcastSubReceiver
     public void setClockVisibility(boolean show) {
         if (mClock != null) {
             mClock.setVisibility(show && !mClockHidden ? View.VISIBLE : View.GONE);
-            if (mClock.getVisibility() == View.VISIBLE) { 
+            if (mClock.getVisibility() == View.VISIBLE) {
                 if (mSecondsHandler != null) {
                     mSecondsHandler.postAtTime(mSecondTick,
                             SystemClock.uptimeMillis() / 1000 * 1000 + 1000);
@@ -188,7 +190,7 @@ public class StatusbarClock implements IconManagerListener, BroadcastSubReceiver
                         if (mSecondsFormat == null) {
                             mSecondsFormat = new SimpleDateFormat(
                                     DateFormat.getBestDateTimePattern(
-                                    Locale.getDefault(), is24 ? "Hms" : "hms"));
+                                            Locale.getDefault(), is24 ? "Hms" : "hms"));
                         }
                         clockText = mSecondsFormat.format(calendar.getTime());
                         if (DEBUG) log("New clock text with seconds: " + clockText);
@@ -204,13 +206,14 @@ public class StatusbarClock implements IconManagerListener, BroadcastSubReceiver
                         amPmIndex = -1;
                     } else if (!mAmPmHide && !is24 && amPmIndex == -1) {
                         // insert AM/PM if missing
-                        if(Locale.getDefault().equals(Locale.TAIWAN) || Locale.getDefault().equals(Locale.CHINA)) {
+                        if (Locale.getDefault().equals(Locale.TAIWAN) || Locale.getDefault().equals(Locale.CHINA)) {
                             clockText = amPm + " " + clockText;
                         } else {
                             clockText += " " + amPm;
                         }
                         amPmIndex = clockText.indexOf(amPm);
-                        if (DEBUG) log("AM/PM added. New clockText: '" + clockText + "'; New AM/PM index: " + amPmIndex);
+                        if (DEBUG)
+                            log("AM/PM added. New clockText: '" + clockText + "'; New AM/PM index: " + amPmIndex);
                     }
                     CharSequence date = "";
                     // apply date to statusbar clock, not the notification panel clock
@@ -232,15 +235,16 @@ public class StatusbarClock implements IconManagerListener, BroadcastSubReceiver
                     sb.setSpan(new RelativeSizeSpan(mDowSize), 0, dow.length() + date.length(),
                             Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
                     if (amPmIndex > -1) {
-                        if(Locale.getDefault().equals(Locale.TAIWAN) || Locale.getDefault().equals(Locale.CHINA)) {
+                        if (Locale.getDefault().equals(Locale.TAIWAN) || Locale.getDefault().equals(Locale.CHINA)) {
                             sb.setSpan(new RelativeSizeSpan(mAmPmSize), dow.length() + date.length() + amPmIndex,
                                     dow.length() + date.length() + amPmIndex + amPm.length(),
                                     Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
                         } else {
-                            int offset = Character.isWhitespace(clockText.charAt(dow.length() + date.length() + amPmIndex - 1)) ?
+                            int len = dow.length() + date.length() + amPmIndex;
+                            int offset = Character.isWhitespace(clockText.charAt(len - 1 < 0 ? 0 : len - 1)) ?
                                     1 : 0;
-                            sb.setSpan(new RelativeSizeSpan(mAmPmSize), dow.length() + date.length() + amPmIndex - offset,
-                                    dow.length() + date.length() + amPmIndex + amPm.length(),
+                            sb.setSpan(new RelativeSizeSpan(mAmPmSize), len - offset,
+                                    len + amPm.length(),
                                     Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
                         }
                     }
@@ -255,12 +259,13 @@ public class StatusbarClock implements IconManagerListener, BroadcastSubReceiver
 
     private String getFormattedDow(String inDow) {
         switch (mClockShowDow) {
-            case GravityBoxSettings.DOW_LOWERCASE: 
+            case GravityBoxSettings.DOW_LOWERCASE:
                 return inDow.toLowerCase(Locale.getDefault());
             case GravityBoxSettings.DOW_UPPERCASE:
                 return inDow.toUpperCase(Locale.getDefault());
             case GravityBoxSettings.DOW_STANDARD:
-            default: return inDow;
+            default:
+                return inDow;
         }
     }
 

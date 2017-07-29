@@ -15,6 +15,8 @@
 
 package com.wrbug.gravitybox.nougat;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -734,7 +736,21 @@ public class ModLockscreen {
                     final Object lockPatternUtils = XposedHelpers.getObjectField(securityView, "mLockPatternUtils");
                     final Object lockSettings = XposedHelpers.callMethod(lockPatternUtils, "getLockSettings");
                     final int userId = mKgMonitor.getCurrentUserId();
-                    final Object response = XposedHelpers.callMethod(lockSettings, "checkPassword", entry, userId, null);
+                    Method[] methods = lockSettings.getClass().getDeclaredMethods();
+                    for (Method method : methods) {
+                        Class[] types = method.getParameterTypes();
+                        StringBuilder builder = new StringBuilder();
+                        for (Class type : types) {
+                            builder.append(type.getName()).append(" , ");
+                        }
+                        log(method.getName() + ": " + builder);
+                    }
+                    Object response = null;
+                    try {
+                        response = XposedHelpers.callMethod(lockSettings, "checkPassword", entry, userId, null);
+                    } catch (Throwable e) {
+                        response = XposedHelpers.callMethod(lockSettings, "checkPassword", entry, userId);
+                    }
                     final int code = (int) XposedHelpers.callMethod(response, "getResponseCode");
                     if (code == 0) {
                         final Object callback = XposedHelpers.getObjectField(securityView, "mCallback");

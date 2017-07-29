@@ -33,6 +33,7 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.TypedValue;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 public class StatusbarBatteryPercentage implements IconManagerListener, BatteryStatusListener {
@@ -52,7 +53,7 @@ public class StatusbarBatteryPercentage implements IconManagerListener, BatteryS
     public static final int CHARGING_STYLE_ANIMATED = 2;
 
     public StatusbarBatteryPercentage(TextView view, XSharedPreferences prefs,
-            BatteryStyleController controller) {
+                                      BatteryStyleController controller) {
         mPercentage = view;
         mController = controller;
         mDefaultColor = mIconColor = mPercentage.getCurrentTextColor();
@@ -96,7 +97,7 @@ public class StatusbarBatteryPercentage implements IconManagerListener, BatteryS
             mChargeAnim.addUpdateListener(new AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator va) {
-                    mPercentage.setTextColor((Integer)va.getAnimatedValue());
+                    mPercentage.setTextColor((Integer) va.getAnimatedValue());
                 }
             });
             mChargeAnim.addListener(new AnimatorListener() {
@@ -111,10 +112,12 @@ public class StatusbarBatteryPercentage implements IconManagerListener, BatteryS
                 }
 
                 @Override
-                public void onAnimationRepeat(Animator animation) { }
+                public void onAnimationRepeat(Animator animation) {
+                }
 
                 @Override
-                public void onAnimationStart(Animator animation) { }
+                public void onAnimationStart(Animator animation) {
+                }
             });
 
             mChargeAnim.setDuration(1000);
@@ -177,7 +180,11 @@ public class StatusbarBatteryPercentage implements IconManagerListener, BatteryS
 
     public void updateText() {
         if (mBatteryData != null) {
-            mPercentage.setText(mBatteryData.level + mPercentSign);
+            String text = String.valueOf(mBatteryData.level);
+            if (!(mPercentage.getLayoutParams() instanceof FrameLayout.LayoutParams)) {
+                text += mPercentSign;
+            }
+            mPercentage.setText(text);
         }
     }
 

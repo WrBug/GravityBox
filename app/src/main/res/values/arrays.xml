@@ -76,7 +76,7 @@
         <item>OFF</item>
     </string-array>
 
-    <string-array name="empty_array" />
+    <string-array name="empty_array"/>
 
     <string-array name="vol_key_cursor_control_entries" translatable="false">
         <item>@string/vol_key_cursor_control_off</item>
@@ -378,7 +378,7 @@
     </string-array>
 
     <!-- Values for window animation scale preference. -->
-    <string-array name="window_animation_scale_values" translatable="false" >
+    <string-array name="window_animation_scale_values" translatable="false">
         <item>0</item>
         <item>.25</item>
         <item>.5</item>
@@ -406,7 +406,7 @@
     </string-array>
 
     <!-- Values for transition animation scale preference. -->
-    <string-array name="transition_animation_scale_values" translatable="false" >
+    <string-array name="transition_animation_scale_values" translatable="false">
         <item>0</item>
         <item>.25</item>
         <item>.5</item>
@@ -434,7 +434,7 @@
     </string-array>
 
     <!-- Values for animator duration scale preference. -->
-    <string-array name="animator_duration_scale_values" translatable="false" >
+    <string-array name="animator_duration_scale_values" translatable="false">
         <item>0</item>
         <item>.25</item>
         <item>.5</item>

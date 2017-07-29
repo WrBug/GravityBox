@@ -16,6 +16,8 @@
 package com.wrbug.gravitybox.nougat;
 
 import com.wrbug.gravitybox.nougat.ModStatusBar.ContainerType;
+import com.wrbug.gravitybox.nougat.battery.BatteryWithPercentLayout;
+import com.wrbug.gravitybox.nougat.battery.CmCircleBattery;
 
 import android.content.Intent;
 import android.content.Context;
@@ -23,12 +25,15 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
@@ -37,16 +42,18 @@ import de.robv.android.xposed.XposedHelpers;
 public class BatteryStyleController implements BroadcastSubReceiver {
     private static final String TAG = "GB:BatteryStyleController";
     public static final String PACKAGE_NAME = "com.android.systemui";
-    public static final String CLASS_BATTERY_CONTROLLER = 
+    public static final String CLASS_BATTERY_CONTROLLER =
             "com.android.systemui.statusbar.policy.BatteryControllerImpl";
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
-    public static final String ACTION_MTK_BATTERY_PERCENTAGE_SWITCH = 
+    public static final String ACTION_MTK_BATTERY_PERCENTAGE_SWITCH =
             "mediatek.intent.action.BATTERY_PERCENTAGE_SWITCH";
     public static final String EXTRA_MTK_BATTERY_PERCENTAGE_STATE = "state";
     public static final String SETTING_MTK_BATTERY_PERCENTAGE = "battery_percentage";
 
-    private enum KeyguardMode { DEFAULT, ALWAYS_SHOW, HIDDEN };
+    private enum KeyguardMode {DEFAULT, ALWAYS_SHOW, HIDDEN}
+
+    ;
 
     private ContainerType mContainerType;
     private ViewGroup mContainer;
@@ -93,17 +100,17 @@ public class BatteryStyleController implements BroadcastSubReceiver {
         mBatteryPercentTextKgMode = KeyguardMode.valueOf(prefs.getString(
                 GravityBoxSettings.PREF_KEY_BATTERY_PERCENT_TEXT_KEYGUARD, "DEFAULT"));
         mMtkPercentTextEnabled = Utils.isMtkDevice() ?
-                Settings.Secure.getInt(mContext.getContentResolver(), 
+                Settings.Secure.getInt(mContext.getContentResolver(),
                         SETTING_MTK_BATTERY_PERCENTAGE, 0) == 1 : false;
         mBatterySaverIndicationDisabled = prefs.getBoolean(
                 GravityBoxSettings.PREF_KEY_BATTERY_SAVER_INDICATION_DISABLE, false);
     }
 
     private void initLayout() throws Throwable {
-        final String[] batteryPercentTextIds = new String[] { "battery_level", "percentage", "battery_text" };
+        final String[] batteryPercentTextIds = new String[]{"battery_level", "percentage", "battery_text"};
         Resources res = mContext.getResources();
         Resources gbRes = Utils.getGbContext(mContext).getResources();
-        
+
         if (!Utils.hasLenovoCustomUI()) {
             // inject percent text if it doesn't exist
             for (String bptId : batteryPercentTextIds) {
@@ -117,10 +124,10 @@ public class BatteryStyleController implements BroadcastSubReceiver {
                     }
                 }
             }
-            if (mPercentText == null || Utils.isOxygenOs35Rom()) {
+            if (mPercentText == null) {
                 TextView percentTextView = new TextView(mContext);
                 LinearLayout.LayoutParams lParams = new LinearLayout.LayoutParams(
-                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+                        LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
                 percentTextView.setLayoutParams(lParams);
                 percentTextView.setPadding(
                         gbRes.getDimensionPixelSize(R.dimen.percent_text_padding_left),
@@ -130,8 +137,8 @@ public class BatteryStyleController implements BroadcastSubReceiver {
                 percentTextView.setTextColor(Color.WHITE);
                 percentTextView.setVisibility(View.GONE);
                 mPercentText = new StatusbarBatteryPercentage(percentTextView, mPrefs, this);
-                int offset = Utils.isOxygenOs35Rom() ? 2 : 1;
-                mSystemIcons.addView(mPercentText.getView(), mSystemIcons.getChildCount()-offset);
+                int offset = 1;
+                mSystemIcons.addView(mPercentText.getView(), mSystemIcons.getChildCount() - offset);
                 if (DEBUG) log("Battery percent text injected");
             }
         }
@@ -143,12 +150,11 @@ public class BatteryStyleController implements BroadcastSubReceiver {
         lParams.gravity = Gravity.CENTER_VERTICAL;
         lParams.setMarginStart(gbRes.getDimensionPixelSize(R.dimen.circle_battery_padding_left));
         lParams.setMarginEnd(Utils.isOxygenOs35Rom() ?
-                 gbRes.getDimensionPixelSize(R.dimen.circle_battery_padding_right_op3t) :
-                 gbRes.getDimensionPixelSize(R.dimen.circle_battery_padding_right));
+                gbRes.getDimensionPixelSize(R.dimen.circle_battery_padding_right_op3t) :
+                gbRes.getDimensionPixelSize(R.dimen.circle_battery_padding_right));
         mCircleBattery.setLayoutParams(lParams);
         mCircleBattery.setVisibility(View.GONE);
-        int pos = Utils.isOxygenOs35Rom() ?
-                mSystemIcons.getChildCount()-1 : mSystemIcons.getChildCount();
+        int pos = mSystemIcons.getChildCount();
         mSystemIcons.addView(mCircleBattery, pos);
         if (DEBUG) log("CmCircleBattery injected");
 
@@ -160,22 +166,38 @@ public class BatteryStyleController implements BroadcastSubReceiver {
         }
 
         // reposition percent text
-        if (mPercentText != null && 
-                mContainerType == ContainerType.STATUSBAR && "RIGHT".equals(mPrefs.getString(
-                GravityBoxSettings.PREF_KEY_BATTERY_PERCENT_TEXT_POSITION, "RIGHT"))) {
-            View v = mPercentText.getView();
-            v.setPadding(
-                    Utils.isOxygenOs35Rom() ? 0 :
-                    gbRes.getDimensionPixelSize(R.dimen.percent_text_padding_right),
-                    0,
-                    Utils.isOxygenOs35Rom() ?
-                     gbRes.getDimensionPixelSize(R.dimen.percent_text_padding_left_op3t) :
-                     gbRes.getDimensionPixelSize(R.dimen.percent_text_padding_left),
-                    0);
-            ViewGroup vg = (ViewGroup) v.getParent();
-            vg.removeView(v);
-            pos = Utils.isOxygenOs35Rom() ? vg.getChildCount()-1 : vg.getChildCount();
-            vg.addView(v, pos);
+        if (mPercentText != null && mContainerType == ContainerType.STATUSBAR) {
+            if ("RIGHT".equals(mPrefs.getString(GravityBoxSettings.PREF_KEY_BATTERY_PERCENT_TEXT_POSITION, "RIGHT"))) {
+                View v = mPercentText.getView();
+                v.setPadding(
+                        Utils.isOxygenOs35Rom() ? 0 :
+                                gbRes.getDimensionPixelSize(R.dimen.percent_text_padding_right),
+                        0,
+                        Utils.isOxygenOs35Rom() ?
+                                gbRes.getDimensionPixelSize(R.dimen.percent_text_padding_left_op3t) :
+                                gbRes.getDimensionPixelSize(R.dimen.percent_text_padding_left),
+                        0);
+                ViewGroup vg = (ViewGroup) v.getParent();
+                vg.removeView(v);
+                pos = vg.getChildCount();
+                vg.addView(v, pos);
+            } else if ("CENTER".equals(mPrefs.getString(GravityBoxSettings.PREF_KEY_BATTERY_PERCENT_TEXT_POSITION, "RIGHT"))) {
+                log("center");
+                BatteryWithPercentLayout layout = new BatteryWithPercentLayout(mContext);
+                FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+//                layoutParams.gravity = Gravity.CENTER;
+                TextView v = mPercentText.getView();
+                v.setTextSize(10);
+                v.setPadding(0, 0, 0, 0);
+                v.setLayoutParams(layoutParams);
+                mSystemIcons.removeView(v);
+                layout.addBatteryPercent(v);
+                mSystemIcons.removeView(mCircleBattery);
+                mCircleBattery.setLayoutParams(layoutParams);
+                layout.addCmCircleBattery(mCircleBattery, mStockBattery);
+                mSystemIcons.addView(layout);
+
+            }
         }
     }
 
@@ -185,7 +207,7 @@ public class BatteryStyleController implements BroadcastSubReceiver {
                 if (mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_STOCK ||
                         mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_STOCK_PERCENT) {
                     mStockBattery.getView().setVisibility(View.VISIBLE);
-                    mStockBattery.setShowPercentage(mBatteryStyle == 
+                    mStockBattery.setShowPercentage(mBatteryStyle ==
                             GravityBoxSettings.BATTERY_STYLE_STOCK_PERCENT);
                 } else {
                     mStockBattery.getView().setVisibility(View.GONE);
@@ -197,13 +219,13 @@ public class BatteryStyleController implements BroadcastSubReceiver {
                         mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_PERCENT ||
                         mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_DASHED ||
                         mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_DASHED_PERCENT) ?
-                                View.VISIBLE : View.GONE);
+                        View.VISIBLE : View.GONE);
                 mCircleBattery.setPercentage(
                         mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_PERCENT ||
-                        mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_DASHED_PERCENT);
+                                mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_DASHED_PERCENT);
                 mCircleBattery.setStyle(
                         mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_DASHED ||
-                        mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_DASHED_PERCENT ?
+                                mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_CIRCLE_DASHED_PERCENT ?
                                 CmCircleBattery.Style.DASHED : CmCircleBattery.Style.SOLID);
             }
 
@@ -233,13 +255,13 @@ public class BatteryStyleController implements BroadcastSubReceiver {
             try {
                 Class<?> batteryControllerClass = XposedHelpers.findClass(CLASS_BATTERY_CONTROLLER,
                         mContext.getClassLoader());
-                XposedHelpers.findAndHookMethod(batteryControllerClass, "onReceive", 
+                XposedHelpers.findAndHookMethod(batteryControllerClass, "onReceive",
                         Context.class, Intent.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        updateBatteryStyle();
-                    }
-                });
+                            @Override
+                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                updateBatteryStyle();
+                            }
+                        });
             } catch (Throwable t) {
                 XposedBridge.log(t);
             }
@@ -249,51 +271,51 @@ public class BatteryStyleController implements BroadcastSubReceiver {
             try {
                 XposedHelpers.findAndHookMethod(mContainer.getClass(), "onBatteryLevelChanged",
                         int.class, boolean.class, boolean.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        if (mPercentText != null) {
-                            mPercentText.updateText();
-                        }
-                    }
-                });
+                            @Override
+                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                if (mPercentText != null) {
+                                    mPercentText.updateText();
+                                }
+                            }
+                        });
             } catch (Throwable t) {
                 XposedBridge.log(t);
             }
             try {
                 XposedHelpers.findAndHookMethod(mContainer.getClass(),
                         "updateVisibilities", new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        if (DEBUG) log(mContainerType + ": updateVisibilities");
-                        if (mPercentText != null) {
-                            if (mContainerType == ContainerType.KEYGUARD) {
-                                if (mBatteryPercentTextKgMode == KeyguardMode.ALWAYS_SHOW) {
-                                    mPercentText.setVisibility(View.VISIBLE);
-                                } else if (mBatteryPercentTextKgMode == KeyguardMode.HIDDEN) {
-                                    mPercentText.setVisibility(View.GONE);
-                                }
-                            } else if (mContainerType == ContainerType.HEADER) {
-                                if (mBatteryPercentTextHeaderHide) {
-                                    mPercentText.setVisibility(View.GONE);
+                            @Override
+                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                if (DEBUG) log(mContainerType + ": updateVisibilities");
+                                if (mPercentText != null) {
+                                    if (mContainerType == ContainerType.KEYGUARD) {
+                                        if (mBatteryPercentTextKgMode == KeyguardMode.ALWAYS_SHOW) {
+                                            mPercentText.setVisibility(View.VISIBLE);
+                                        } else if (mBatteryPercentTextKgMode == KeyguardMode.HIDDEN) {
+                                            mPercentText.setVisibility(View.GONE);
+                                        }
+                                    } else if (mContainerType == ContainerType.HEADER) {
+                                        if (mBatteryPercentTextHeaderHide) {
+                                            mPercentText.setVisibility(View.GONE);
+                                        }
+                                    }
                                 }
                             }
-                        }
-                    }
-                });
+                        });
             } catch (Throwable t) {
                 XposedBridge.log(t);
             }
             try {
                 XposedHelpers.findAndHookMethod(mContainer.getClass(), "onConfigurationChanged",
                         Configuration.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        if (mPercentText != null) {
-                            mPercentText.setTextSize(Integer.valueOf(mPrefs.getString(
-                                GravityBoxSettings.PREF_KEY_BATTERY_PERCENT_TEXT_SIZE, "16")));
-                        }
-                    }
-                });
+                            @Override
+                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                if (mPercentText != null) {
+                                    mPercentText.setTextSize(Integer.valueOf(mPrefs.getString(
+                                            GravityBoxSettings.PREF_KEY_BATTERY_PERCENT_TEXT_SIZE, "16")));
+                                }
+                            }
+                        });
             } catch (Throwable t) {
                 XposedBridge.log(t);
             }
@@ -320,30 +342,33 @@ public class BatteryStyleController implements BroadcastSubReceiver {
             if (intent.hasExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_STATUSBAR)) {
                 mBatteryPercentTextEnabledSb = intent.getBooleanExtra(
                         GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_STATUSBAR, false);
-                if (DEBUG) log("mBatteryPercentTextEnabledSb changed to: " + mBatteryPercentTextEnabledSb);
+                if (DEBUG)
+                    log("mBatteryPercentTextEnabledSb changed to: " + mBatteryPercentTextEnabledSb);
             }
             if (intent.hasExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_HEADER_HIDE)) {
                 mBatteryPercentTextHeaderHide = intent.getBooleanExtra(
                         GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_HEADER_HIDE, false);
-                if (DEBUG) log("mBatteryPercentTextHeaderHide changed to: " + mBatteryPercentTextHeaderHide);
+                if (DEBUG)
+                    log("mBatteryPercentTextHeaderHide changed to: " + mBatteryPercentTextHeaderHide);
             }
             if (intent.hasExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_KEYGUARD)) {
                 mBatteryPercentTextKgMode = KeyguardMode.valueOf(intent.getStringExtra(
                         GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_KEYGUARD));
-                if (DEBUG) log("mBatteryPercentTextEnabledKg changed to: " + mBatteryPercentTextKgMode);
+                if (DEBUG)
+                    log("mBatteryPercentTextEnabledKg changed to: " + mBatteryPercentTextKgMode);
             }
             updateBatteryStyle();
         } else if (action.equals(GravityBoxSettings.ACTION_PREF_BATTERY_PERCENT_TEXT_SIZE_CHANGED) &&
                 intent.hasExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_SIZE) && mPercentText != null) {
-                    int textSize = intent.getIntExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_SIZE, 0);
-                    mPercentText.setTextSize(textSize);
-                    if (DEBUG) log("PercentText size changed to: " + textSize);
+            int textSize = intent.getIntExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_SIZE, 0);
+            mPercentText.setTextSize(textSize);
+            if (DEBUG) log("PercentText size changed to: " + textSize);
         } else if (action.equals(GravityBoxSettings.ACTION_PREF_BATTERY_PERCENT_TEXT_STYLE_CHANGED)
-                       && mPercentText != null) {
+                && mPercentText != null) {
             if (intent.hasExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_STYLE)) {
-                    String percentSign = intent.getStringExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_STYLE);
-                    mPercentText.setPercentSign(percentSign);
-                    if (DEBUG) log("PercentText sign changed to: " + percentSign);
+                String percentSign = intent.getStringExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_STYLE);
+                mPercentText.setPercentSign(percentSign);
+                if (DEBUG) log("PercentText sign changed to: " + percentSign);
             }
             if (intent.hasExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_CHARGING)) {
                 int chargingStyle = intent.getIntExtra(GravityBoxSettings.EXTRA_BATTERY_PERCENT_TEXT_CHARGING,

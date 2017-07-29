@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.wrbug.gravitybox.nougat;
+package com.wrbug.gravitybox.nougat.battery;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -26,10 +26,15 @@ import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
+import android.support.v7.widget.AppCompatImageView;
 import android.util.TypedValue;
 import android.widget.ImageView;
 
+import com.wrbug.gravitybox.nougat.BatteryStyleController;
+import com.wrbug.gravitybox.nougat.BuildConfig;
+import com.wrbug.gravitybox.nougat.ModStatusBar;
 import com.wrbug.gravitybox.nougat.ModStatusBar.ContainerType;
+import com.wrbug.gravitybox.nougat.Utils;
 import com.wrbug.gravitybox.nougat.managers.BatteryInfoManager.BatteryData;
 import com.wrbug.gravitybox.nougat.managers.BatteryInfoManager.BatteryStatusListener;
 import com.wrbug.gravitybox.nougat.managers.StatusBarIconManager;
@@ -39,38 +44,40 @@ import com.wrbug.gravitybox.nougat.managers.SysUiManagers;
 
 import de.robv.android.xposed.XposedBridge;
 
-public class CmCircleBattery extends ImageView implements IconManagerListener, BatteryStatusListener {
+public class CmCircleBattery extends AppCompatImageView implements IconManagerListener, BatteryStatusListener {
     private static final String TAG = "GB:CircleBattery";
     private static final boolean DEBUG = BuildConfig.DEBUG;
 
-    public enum Style { SOLID, DASHED };
+    public enum Style {SOLID, DASHED}
+
+    ;
 
     private Handler mHandler;
 
     // state variables
     private boolean mAttached;      // whether or not attached to a window
     private boolean mIsCharging;    // whether or not device is currently charging
-    private int     mLevel;         // current battery level
+    private int mLevel;         // current battery level
     private boolean mIsPowerSaving; // whether power saving mode is on
-    private int     mAnimOffset;    // current level of charging animation
+    private int mAnimOffset;    // current level of charging animation
     private boolean mIsAnimating;   // stores charge-animation status to reliably remove callbacks
-    private int     mDockLevel;     // current dock battery level
+    private int mDockLevel;     // current dock battery level
     private boolean mDockIsCharging;// whether or not dock battery is currently charging
     private boolean mPercentage;    // whether to show percentage
     private BatteryStyleController mController;
 
-    private int     mCircleSize;    // draw size of circle. read rather complicated from
-                                    // another status bar icon, so it fits the icon size
-                                    // no matter the dps and resolution
-    private RectF   mRectLeft;      // contains the precalculated rect used in drawArc(), derived from mCircleSize
-    private Float   mTextLeftX;     // precalculated x position for drawText() to appear centered
-    private Float   mTextY;         // precalculated y position for drawText() to appear vertical-centered
+    private int mCircleSize;    // draw size of circle. read rather complicated from
+    // another status bar icon, so it fits the icon size
+    // no matter the dps and resolution
+    private RectF mRectLeft;      // contains the precalculated rect used in drawArc(), derived from mCircleSize
+    private Float mTextLeftX;     // precalculated x position for drawText() to appear centered
+    private Float mTextY;         // precalculated y position for drawText() to appear vertical-centered
 
     // quiet a lot of paint variables. helps to move cpu-usage from actual drawing to initialization
-    private Paint   mPaintFont;
-    private Paint   mPaintGray;
-    private Paint   mPaintSystem;
-    private Paint   mPaintRed;
+    private Paint mPaintFont;
+    private Paint mPaintGray;
+    private Paint mPaintSystem;
+    private Paint mPaintRed;
 
     // style
     private float mStrokeWidthFactor;
@@ -83,7 +90,7 @@ public class CmCircleBattery extends ImageView implements IconManagerListener, B
     // runnable to invalidate view via mHandler.postDelayed() call
     private final Runnable mInvalidate = new Runnable() {
         public void run() {
-            if(mAttached) {
+            if (mAttached) {
                 invalidate();
             }
         }
@@ -165,7 +172,7 @@ public class CmCircleBattery extends ImageView implements IconManagerListener, B
                 break;
             case DASHED:
                 mStrokeWidthFactor = 7f;
-                mPathEffect = new DashPathEffect(new float[]{3,2},0);
+                mPathEffect = new DashPathEffect(new float[]{3, 2}, 0);
                 break;
         }
         mRectLeft = null;
@@ -201,9 +208,9 @@ public class CmCircleBattery extends ImageView implements IconManagerListener, B
                 SysUiManagers.BatteryInfoManager.unregisterListener(this);
             }
             mRectLeft = null; // makes sure, size based variables get
-                                // recalculated on next attach
+            // recalculated on next attach
             mCircleSize = 0;    // makes sure, mCircleSize is reread from icons on
-                                // next attach
+            // next attach
         }
     }
 
@@ -222,11 +229,11 @@ public class CmCircleBattery extends ImageView implements IconManagerListener, B
     }
 
     private void drawCircle(Canvas canvas, int level, int animOffset, float textX, RectF drawRect) {
-        final Paint usePaint = level <= 15 && 
+        final Paint usePaint = level <= 15 &&
                 (!mIsPowerSaving ||
-                 mController.getContainerType() != ContainerType.STATUSBAR ||
-                 mController.isBatterySaverIndicationDisabled()) ? 
-                         mPaintRed : mPaintSystem;
+                        mController.getContainerType() != ContainerType.STATUSBAR ||
+                        mController.isBatterySaverIndicationDisabled()) ?
+                mPaintRed : mPaintSystem;
         usePaint.setAntiAlias(true);
         usePaint.setPathEffect(mPathEffect);
 
