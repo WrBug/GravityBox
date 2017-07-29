@@ -1283,9 +1283,7 @@ public class ModStatusBar {
             final int x = (int) event.getRawX();
             final int y = (int) event.getRawY();
             Handler handler = (Handler) XposedHelpers.getObjectField(mPhoneStatusBar, "mHandler");
-            int statusBarHeaderHeight = Utils.isOxygenOs35Rom() ?
-                    (int) XposedHelpers.callMethod(mHeader, "getCollapsedHeight") :
-                    XposedHelpers.getIntField(mHeader, "mCollapsedHeight");
+            int statusBarHeaderHeight = (int) XposedHelpers.callMethod(mHeader, "getCollapsedHeight");
 
             if (action == MotionEvent.ACTION_DOWN) {
                 if (y < statusBarHeaderHeight) {

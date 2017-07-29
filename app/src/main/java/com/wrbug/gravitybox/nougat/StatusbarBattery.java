@@ -25,12 +25,14 @@ import com.wrbug.gravitybox.nougat.managers.StatusBarIconManager.ColorInfo;
 import com.wrbug.gravitybox.nougat.managers.StatusBarIconManager.IconManagerListener;
 
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 
 public class StatusbarBattery implements IconManagerListener {
     private static final String TAG = "GB:StatusbarBattery";
 
     private View mBattery;
+    private Drawable mDrawable;
     private int mDefaultColor;
     private int mDefaultFrameColor;
     private int mFrameAlpha;
@@ -44,12 +46,13 @@ public class StatusbarBattery implements IconManagerListener {
         mBattery = batteryView;
         createHooks();
         try {
-            final int[] colors = (int[]) XposedHelpers.getObjectField(mBattery, "mColors");
-            mDefaultColor = colors[colors.length-1];
-            final Paint framePaint = (Paint) XposedHelpers.getObjectField(mBattery, "mFramePaint");
+            Object drawable = getDrawable();
+            final int[] colors = (int[]) XposedHelpers.getObjectField(drawable, "mColors");
+            mDefaultColor = colors[colors.length - 1];
+            final Paint framePaint = (Paint) XposedHelpers.getObjectField(drawable, "mFramePaint");
             mDefaultFrameColor = framePaint.getColor();
             mFrameAlpha = framePaint.getAlpha();
-            mDefaultChargeColor = XposedHelpers.getIntField(mBattery, "mChargeColor");
+            mDefaultChargeColor = XposedHelpers.getIntField(drawable, "mChargeColor");
         } catch (Throwable t) {
             log("Error backing up original colors: " + t.getMessage());
         }
@@ -61,16 +64,16 @@ public class StatusbarBattery implements IconManagerListener {
     private void createHooks() {
         if (!Utils.isXperiaDevice()) {
             try {
-                XposedHelpers.findAndHookMethod(mBattery.getClass(), "getFillColor",
+                XposedHelpers.findAndHookMethod(getDrawable().getClass(), "getFillColor",
                         float.class, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        if (SysUiManagers.IconManager != null &&
-                                SysUiManagers.IconManager.isColoringEnabled()) {
-                            param.setResult(SysUiManagers.IconManager.getIconColor());
-                        }
-                    }
-                });
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                if (SysUiManagers.IconManager != null &&
+                                        SysUiManagers.IconManager.isColoringEnabled()) {
+                                    param.setResult(SysUiManagers.IconManager.getIconColor());
+                                }
+                            }
+                        });
             } catch (Throwable t) {
                 log("Error hooking getFillColor(): " + t.getMessage());
             }
@@ -81,26 +84,35 @@ public class StatusbarBattery implements IconManagerListener {
         return mBattery;
     }
 
+    public Drawable getDrawable() {
+        if (mDrawable == null) {
+            mDrawable = (Drawable) XposedHelpers.getObjectField(mBattery, "mDrawable");
+        }
+        return mDrawable;
+    }
+
     public void setColors(int mainColor, int frameColor, int chargeColor) {
         if (mBattery != null) {
             try {
-                final int[] colors = (int[]) XposedHelpers.getObjectField(mBattery, "mColors");
-                colors[colors.length-1] = mainColor;
-                final Paint framePaint = (Paint) XposedHelpers.getObjectField(mBattery, "mFramePaint");
+                Object drawable = getDrawable();
+                final int[] colors = (int[]) XposedHelpers.getObjectField(drawable, "mColors");
+                colors[colors.length - 1] = mainColor;
+                final Paint framePaint = (Paint) XposedHelpers.getObjectField(drawable, "mFramePaint");
                 framePaint.setColor(frameColor);
                 framePaint.setAlpha(mFrameAlpha);
-                XposedHelpers.setIntField(mBattery, "mChargeColor", chargeColor);
-                XposedHelpers.setIntField(mBattery, "mIconTint", mainColor);
+                XposedHelpers.setIntField(drawable, "mChargeColor", chargeColor);
+                XposedHelpers.setIntField(drawable, "mIconTint", mainColor);
             } catch (Throwable t) {
-                log("Error setting colors: " + t.getMessage());
+                XposedBridge.log(t);
             }
         }
     }
 
     public void setShowPercentage(boolean showPercentage) {
-        if (mBattery != null && !Utils.isOxygenOs35Rom()) {
+        if (mBattery != null) {
             try {
-                XposedHelpers.setBooleanField(mBattery, "mShowPercent", showPercentage);
+                XposedHelpers.setBooleanField(getDrawable(), "mShowPercent", showPercentage);
+                getDrawable().invalidateSelf();
                 mBattery.invalidate();
             } catch (Throwable t) {
                 log("Error setting percentage: " + t.getMessage());
@@ -116,6 +128,7 @@ public class StatusbarBattery implements IconManagerListener {
             } else {
                 setColors(mDefaultColor, mDefaultFrameColor, mDefaultChargeColor);
             }
+            getDrawable().invalidateSelf();
             mBattery.invalidate();
         }
     }

@@ -564,7 +564,7 @@ public class ModExpandedDesktop {
                                         if (getBool("mNavigationBarOnBottom")) {
                                             // It's a system nav bar or a portrait screen; nav bar goes on bottom.
                                             int top = displayHeight - overscanBottom
-                                                    - getIntArray("mNavigationBarHeightForRotation")[displayRotation];
+                                                    - getIntArray("mNavigationBarHeightForRotationDefault")[displayRotation];
                                             getRect("mTmpNavigationFrame").set(0, top, displayWidth, displayHeight - overscanBottom);
                                             val = getRect("mTmpNavigationFrame").top;
                                             setInt("mStableBottom", val);
@@ -593,7 +593,7 @@ public class ModExpandedDesktop {
                                         } else if (mNavbarLeftHanded && !isNavbarHidden()) {
                                             // Landscape screen; nav bar goes to the left.
                                             int right = overscanLeft +
-                                                    getIntArray("mNavigationBarWidthForRotation")[displayRotation];
+                                                    getIntArray("mNavigationBarWidthForRotationDefault")[displayRotation];
                                             getRect("mTmpNavigationFrame").set(0, 0, right, displayHeight);
                                             val = getRect("mTmpNavigationFrame").right;
                                             setInt("mStableLeft", val);
@@ -628,7 +628,7 @@ public class ModExpandedDesktop {
                                         } else {
                                             // Landscape screen; nav bar goes to the right.
                                             int left = displayWidth - overscanRight
-                                                    - getIntArray("mNavigationBarWidthForRotation")[displayRotation];
+                                                    - getIntArray("mNavigationBarWidthForRotationDefault")[displayRotation];
                                             getRect("mTmpNavigationFrame").set(left, 0, displayWidth - overscanRight, displayHeight);
                                             val = getRect("mTmpNavigationFrame").left;
                                             setInt("mStableRight", val);

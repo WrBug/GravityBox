@@ -20,6 +20,8 @@ GravityBox[NG] is base on [GravityBox[MM]][1] , the current version is beta and 
 - hide navigation bar quick setting(fixing...)
 - fix Auto Show Dialpad
 - fix Android7.0 show seconds doesn't work 
+- fix Smart Lock doesn't work
+- fix Enable brightness control
 
 ### v1.0.1-beta (2017-7-24)
 

@@ -99,7 +99,6 @@ public class ModDialer25 {
                 }
             }
         }
-        log(info != null ? info.toString() : "hehehe");
         return info;
     }
 
