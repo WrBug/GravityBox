@@ -295,7 +295,7 @@ public class Utils {
 //                    version.startsWith("OP3_O2_Open_7"));
 //        }
 //        return mIsOxygenOs35Rom;
-        return isOxygenOs45Rom();
+        return false;
     }
 
     public static boolean isOxygenOs45Rom() {

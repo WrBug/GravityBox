@@ -315,4 +315,27 @@ public class KeyguardStateMonitor implements BroadcastSubReceiver {
                     GravityBoxSettings.PREF_KEY_LOCKSCREEN_IMPRINT_MODE, "DEFAULT"));
         }
     }
+
+    @Override
+    public String toString() {
+        return "KeyguardStateMonitor{" +
+                "mPrefs=" + mPrefs +
+                ", mContext=" + mContext +
+                ", mIsShowing=" + mIsShowing +
+                ", mIsSecured=" + mIsSecured +
+                ", mIsLocked=" + mIsLocked +
+                ", mIsTrustManaged=" + mIsTrustManaged +
+                ", mIsKeyguardDisabled=" + mIsKeyguardDisabled +
+                ", mMonitor=" + mMonitor +
+                ", mUpdateMonitor=" + mUpdateMonitor +
+                ", mMediator=" + mMediator +
+                ", mProxWakeupEnabled=" + mProxWakeupEnabled +
+                ", mPm=" + mPm +
+                ", mHandler=" + mHandler +
+                ", mFpAuthOnNextScreenOn=" + mFpAuthOnNextScreenOn +
+                ", mImprintMode=" + mImprintMode +
+                ", mListeners=" + mListeners +
+                ", mResetFpRunnable=" + mResetFpRunnable +
+                '}';
+    }
 }

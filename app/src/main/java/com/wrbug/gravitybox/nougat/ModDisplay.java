@@ -44,6 +44,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.os.ResultReceiver;
 import android.view.Surface;
+
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
@@ -55,7 +56,7 @@ public class ModDisplay {
     private static final String CLASS_LIGHT_SERVICE_LIGHT = "com.android.server.lights.LightsService$LightImpl";
     private static final String CLASS_DISPLAY_POWER_REQUEST = "android.hardware.display.DisplayManagerInternal.DisplayPowerRequest";
     private static final String CLASS_DISPLAY_MANAGER_GLOBAL = "android.hardware.display.DisplayManagerGlobal";
-    private static final boolean DEBUG = BuildConfig.DEBUG;
+    private static final boolean DEBUG = false;
     private static final boolean DEBUG_KIS = false;
 
     public static final String ACTION_GET_AUTOBRIGHTNESS_CONFIG = "gravitybox.intent.action.GET_AUTOBRIGHTNESS_CONFIG";
@@ -92,12 +93,12 @@ public class ModDisplay {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (DEBUG) log("Broadcast received: " + intent.toString());
-            if(intent.getAction().equals(ACTION_GET_AUTOBRIGHTNESS_CONFIG) &&
+            if (intent.getAction().equals(ACTION_GET_AUTOBRIGHTNESS_CONFIG) &&
                     intent.hasExtra("receiver")) {
                 ResultReceiver receiver = intent.getParcelableExtra("receiver");
                 Bundle data = new Bundle();
                 Resources res = context.getResources();
-                data.putIntArray("config_autoBrightnessLevels", 
+                data.putIntArray("config_autoBrightnessLevels",
                         res.getIntArray(res.getIdentifier(
                                 "config_autoBrightnessLevels", "array", "android")));
                 data.putIntArray("config_autoBrightnessLcdBacklightValues",
@@ -120,14 +121,14 @@ public class ModDisplay {
                     }
                 }
             } else if ((intent.getAction().equals(Intent.ACTION_SCREEN_ON)
-                        || intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) &&
-                        !mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_DEFAULT)) {
+                    || intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) &&
+                    !mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_DEFAULT)) {
                 updateButtonBacklight(intent.getAction().equals(Intent.ACTION_SCREEN_ON));
             } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_LOCKSCREEN_BG_CHANGED) &&
                     intent.hasExtra(GravityBoxSettings.EXTRA_LOCKSCREEN_BG)) {
                 mLsBgLastScreenEnabled = intent.getStringExtra(GravityBoxSettings.EXTRA_LOCKSCREEN_BG)
                         .equals(GravityBoxSettings.LOCKSCREEN_BG_LAST_SCREEN);
-                if (DEBUG_KIS) log ("mLsBgLastScreenEnabled = " + mLsBgLastScreenEnabled);
+                if (DEBUG_KIS) log("mLsBgLastScreenEnabled = " + mLsBgLastScreenEnabled);
             } else if (intent.getAction().equals(GravityBoxSettings.ACTION_BATTERY_LED_CHANGED) &&
                     intent.hasExtra(GravityBoxSettings.EXTRA_BLED_CHARGING)) {
                 ChargingLed cg = ChargingLed.valueOf(intent.getStringExtra(GravityBoxSettings.EXTRA_BLED_CHARGING));
@@ -140,8 +141,8 @@ public class ModDisplay {
                 }
             } else if (intent.getAction().equals(Intent.ACTION_BATTERY_CHANGED)) {
                 boolean charging = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
-                int level = (int)(100f * intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
-                                    / intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100));
+                int level = (int) (100f * intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0)
+                        / intent.getIntExtra(BatteryManager.EXTRA_SCALE, 100));
                 if (mCharging != charging || mBatteryLevel != level) {
                     mCharging = charging;
                     mBatteryLevel = level;
@@ -170,7 +171,7 @@ public class ModDisplay {
             } else if (!isScreenOn) {
                 color = 0;
             }
-    
+
             if (color != null) {
                 Object ls = XposedHelpers.getSurroundingThis(mLight);
                 long np = XposedHelpers.getLongField(ls, "mNativePointer");
@@ -209,8 +210,8 @@ public class ModDisplay {
                 long np = XposedHelpers.getLongField(ls, "mNativePointer");
                 if (!mPendingNotif) {
                     mHandler.removeCallbacks(this);
-                    mPendingNotifColor = 
-                            mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_ALWAYS_ON) 
+                    mPendingNotifColor =
+                            mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_ALWAYS_ON)
                                     && mPm.isInteractive() ? 0xff6e6e6e : 0;
                     XposedHelpers.callMethod(ls, "setLight_native",
                             np, LIGHT_ID_BUTTONS, mPendingNotifColor, 0, 0, 0, 0);
@@ -218,16 +219,16 @@ public class ModDisplay {
                     if (mPendingNotifColor == 0) {
                         mPendingNotifColor = 0xff6e6e6e;
                         XposedHelpers.callMethod(ls, "setLight_native",
-                            np, LIGHT_ID_BUTTONS, mPendingNotifColor, 0, 0, 0, 0);
+                                np, LIGHT_ID_BUTTONS, mPendingNotifColor, 0, 0, 0, 0);
                         mHandler.postDelayed(mPendingNotifRunnable, 500);
                     } else {
                         mPendingNotifColor = 0;
                         XposedHelpers.callMethod(ls, "setLight_native",
-                            np, LIGHT_ID_BUTTONS, mPendingNotifColor, 0, 0, 0, 0);
+                                np, LIGHT_ID_BUTTONS, mPendingNotifColor, 0, 0, 0, 0);
                         mHandler.postDelayed(mPendingNotifRunnable, mPulseNotifDelay);
                     }
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 XposedBridge.log(e);
             }
         }
@@ -239,7 +240,7 @@ public class ModDisplay {
                     XposedHelpers.findClass(CLASS_DISPLAY_POWER_CONTROLLER, classLoader);
             final Class<?> classLight = XposedHelpers.findClass(CLASS_LIGHT_SERVICE_LIGHT, classLoader);
 
-            final boolean brightnessSettingsEnabled = 
+            final boolean brightnessSettingsEnabled =
                     prefs.getBoolean(GravityBoxSettings.PREF_KEY_BRIGHTNESS_MASTER_SWITCH, false);
 
             mButtonBacklightMode = prefs.getString(
@@ -273,12 +274,12 @@ public class ModDisplay {
                             String[] brightnessValues = config.split("\\|")[1].split(",");
                             int[] luxArray = new int[luxValues.length];
                             int index = 0;
-                            for(String s : luxValues) {
+                            for (String s : luxValues) {
                                 luxArray[index++] = Integer.valueOf(s);
                             }
                             int[] brightnessArray = new int[brightnessValues.length];
                             index = 0;
-                            for(String s : brightnessValues) {
+                            for (String s : brightnessValues) {
                                 brightnessArray[index++] = Integer.valueOf(s);
                             }
                             updateAutobrightnessConfig(luxArray, brightnessArray);
@@ -304,217 +305,230 @@ public class ModDisplay {
             XposedHelpers.findAndHookMethod(classLight, "setLightLocked",
                     int.class, int.class, int.class, int.class, int.class, new XC_MethodHook() {
 
-                @Override
-                protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
-                    if (mLight == null) mLight = param.thisObject;
-                    int id = XposedHelpers.getIntField(param.thisObject, "mId");
-                    if (DEBUG) log("lightId=" + id + "; color=" + param.args[0] + 
-                            "; mode=" + param.args[1] + "; " + "onMS=" + param.args[2] + 
-                            "; offMS=" + param.args[3] + "; bMode=" + param.args[4]);
+                        @Override
+                        protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
+                            if (mLight == null) mLight = param.thisObject;
+                            int id = XposedHelpers.getIntField(param.thisObject, "mId");
+                            if (DEBUG) log("lightId=" + id + "; color=" + param.args[0] +
+                                    "; mode=" + param.args[1] + "; " + "onMS=" + param.args[2] +
+                                    "; offMS=" + param.args[3] + "; bMode=" + param.args[4]);
 
-                    if (mPm == null) {
-                        Object lightService = XposedHelpers.getSurroundingThis(param.thisObject);
-                        Context context = (Context) XposedHelpers.getObjectField(lightService, "mContext");
-                        mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                    }
-
-                    if (id == LIGHT_ID_BUTTONS && !(mButtonBacklightNotif && mPendingNotif)) {
-                        if (mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_DISABLE)) {
-                            param.args[0] = param.args[1] = param.args[2] = param.args[3] = param.args[4] = 0;
-                            if (DEBUG) log("Button backlight disabled. Turning off");
-                            return;
-                        } else if (mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_ALWAYS_ON)) {
-                            int color = (Integer)param.args[0];
-                            if (mPm.isInteractive() && (color == 0 || color == Color.BLACK)) {
-                                if (DEBUG) log("Button backlight always on and screen is on. Turning on");
-                                param.args[0] = 0xff6e6e6e;
-                                return;
+                            if (mPm == null) {
+                                Object lightService = XposedHelpers.getSurroundingThis(param.thisObject);
+                                Context context = (Context) XposedHelpers.getObjectField(lightService, "mContext");
+                                mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
                             }
-                        }
-                    }
 
-                    if (id == LIGHT_ID_NOTIFICATIONS) {
-                        if ((Integer)param.args[0] != 0) {
-                            if (!mPendingNotif) {
-                                if (DEBUG) log("New notification. Entering PendingNotif state");
-                                mPendingNotif = true;
-                                if (mButtonBacklightNotif) {
-                                    mWakeLock = mPm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "GbModDisplay");
-                                    mWakeLock.acquire(3600000);
-                                    if (mHandler == null) {
-                                        mHandler = (Handler) XposedHelpers.getObjectField(
-                                            XposedHelpers.getSurroundingThis(param.thisObject), "mH");
+                            if (id == LIGHT_ID_BUTTONS && !(mButtonBacklightNotif && mPendingNotif)) {
+                                if (mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_DISABLE)) {
+                                    param.args[0] = param.args[1] = param.args[2] = param.args[3] = param.args[4] = 0;
+                                    if (DEBUG) log("Button backlight disabled. Turning off");
+                                    return;
+                                } else if (mButtonBacklightMode.equals(GravityBoxSettings.BB_MODE_ALWAYS_ON)) {
+                                    int color = (Integer) param.args[0];
+                                    if (mPm.isInteractive() && (color == 0 || color == Color.BLACK)) {
+                                        if (DEBUG)
+                                            log("Button backlight always on and screen is on. Turning on");
+                                        param.args[0] = 0xff6e6e6e;
+                                        return;
                                     }
-                                    mHandler.removeCallbacks(mPendingNotifRunnable);
-                                    mHandler.post(mPendingNotifRunnable);
                                 }
                             }
-                        } else if (mPendingNotif) {
-                            if (DEBUG) log("Notification dismissed. Leaving PendingNotif state");
-                            mPendingNotif = false;
-                            if (mWakeLock != null && mWakeLock.isHeld()) {
-                                mWakeLock.release();
+
+                            if (id == LIGHT_ID_NOTIFICATIONS) {
+                                if ((Integer) param.args[0] != 0) {
+                                    if (!mPendingNotif) {
+                                        if (DEBUG)
+                                            log("New notification. Entering PendingNotif state");
+                                        mPendingNotif = true;
+                                        if (mButtonBacklightNotif) {
+                                            mWakeLock = mPm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "GbModDisplay");
+                                            mWakeLock.acquire(3600000);
+                                            if (mHandler == null) {
+                                                mHandler = (Handler) XposedHelpers.getObjectField(
+                                                        XposedHelpers.getSurroundingThis(param.thisObject), "mH");
+                                            }
+                                            mHandler.removeCallbacks(mPendingNotifRunnable);
+                                            mHandler.post(mPendingNotifRunnable);
+                                        }
+                                    }
+                                } else if (mPendingNotif) {
+                                    if (DEBUG)
+                                        log("Notification dismissed. Leaving PendingNotif state");
+                                    mPendingNotif = false;
+                                    if (mWakeLock != null && mWakeLock.isHeld()) {
+                                        mWakeLock.release();
+                                    }
+                                    mWakeLock = null;
+                                }
+
+                                if (!mPendingNotif && mCharging &&
+                                        (mChargingLed == ChargingLed.EMULATED || mChargingLed == ChargingLed.CONSTANT)) {
+                                    int cappedLevel = Math.min(Math.max(mBatteryLevel, 15), 90);
+                                    float hue = (cappedLevel - 15) * 1.6f;
+                                    param.args[0] = Color.HSVToColor(0xff, new float[]{hue, 1.f, 1.f});
+                                    param.args[1] = 1;
+                                    param.args[2] = mChargingLed == ChargingLed.CONSTANT ? Integer.MAX_VALUE : 10000;
+                                    param.args[3] = mChargingLed == ChargingLed.CONSTANT ? 0 : 1;
+                                    param.args[4] = 0;
+                                }
                             }
-                            mWakeLock = null;
-                        }
 
-                        if (!mPendingNotif && mCharging &&
-                                (mChargingLed == ChargingLed.EMULATED || mChargingLed == ChargingLed.CONSTANT)) {
-                            int cappedLevel = Math.min(Math.max(mBatteryLevel, 15), 90);
-                            float hue = (cappedLevel - 15) * 1.6f;
-                            param.args[0] = Color.HSVToColor(0xff, new float[]{ hue, 1.f, 1.f });
-                            param.args[1] = 1;
-                            param.args[2] = mChargingLed == ChargingLed.CONSTANT ? Integer.MAX_VALUE : 10000;
-                            param.args[3] = mChargingLed == ChargingLed.CONSTANT ? 0 : 1;
-                            param.args[4] = 0;
+                            if (id == LIGHT_ID_BATTERY &&
+                                    (mChargingLed == ChargingLed.EMULATED || mChargingLed == ChargingLed.CONSTANT)) {
+                                param.setResult(null);
+                            }
                         }
-                    }
-
-                    if (id == LIGHT_ID_BATTERY && 
-                            (mChargingLed == ChargingLed.EMULATED || mChargingLed == ChargingLed.CONSTANT)) {
-                        param.setResult(null);
-                    }
-                }
-            });
+                    });
 
             XposedHelpers.findAndHookMethod(classDisplayPowerController, "requestPowerState",
                     CLASS_DISPLAY_POWER_REQUEST, boolean.class, new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
-                    if (!mLsBgLastScreenEnabled) return;
+                        @Override
+                        protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
+                            if (!mLsBgLastScreenEnabled) return;
 
-                    if (mKeyguardManager == null) {
-                        mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
-                    }
-                    if (mKeyguardManager.isKeyguardLocked()) return;
+                            if (mKeyguardManager == null) {
+                                mKeyguardManager = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
+                            }
+                            if (mKeyguardManager.isKeyguardLocked()) return;
 
-                    final boolean waitForNegativeProximity = (Boolean) param.args[1];
-                    final boolean pendingWaitForNegativeProximity = 
-                            XposedHelpers.getBooleanField(param.thisObject, "mPendingWaitForNegativeProximityLocked");
-                    final Object pendingRequestLocked = 
-                            XposedHelpers.getObjectField(param.thisObject, "mPendingRequestLocked");
-                    final int requestedScreenState = XposedHelpers.getIntField(param.args[0], "policy");
+                            final boolean waitForNegativeProximity = (Boolean) param.args[1];
+                            final boolean pendingWaitForNegativeProximity =
+                                    XposedHelpers.getBooleanField(param.thisObject, "mPendingWaitForNegativeProximityLocked");
+                            final Object pendingRequestLocked =
+                                    XposedHelpers.getObjectField(param.thisObject, "mPendingRequestLocked");
+                            final int requestedScreenState = XposedHelpers.getIntField(param.args[0], "policy");
 
-                    if ((waitForNegativeProximity && !pendingWaitForNegativeProximity ||
-                            pendingRequestLocked == null || !pendingRequestLocked.equals(param.args[0])) &&
-                            requestedScreenState == 0) {
-                        final Object dm = XposedHelpers.callStaticMethod(XposedHelpers.findClass(
-                                CLASS_DISPLAY_MANAGER_GLOBAL, classLoader), "getInstance");
-                        final int display0 = ((int[])XposedHelpers.callMethod(dm, "getDisplayIds"))[0];
-                        Object displayInfo = XposedHelpers.callMethod(dm, "getDisplayInfo", display0);
-                        final int naturalW = (Integer)XposedHelpers.callMethod(displayInfo, "getNaturalWidth");
-                        final int naturalH = (Integer)XposedHelpers.callMethod(displayInfo, "getNaturalHeight");
+                            if ((waitForNegativeProximity && !pendingWaitForNegativeProximity ||
+                                    pendingRequestLocked == null || !pendingRequestLocked.equals(param.args[0])) &&
+                                    requestedScreenState == 0) {
+                                final Object dm = XposedHelpers.callStaticMethod(XposedHelpers.findClass(
+                                        CLASS_DISPLAY_MANAGER_GLOBAL, classLoader), "getInstance");
+                                final int display0 = ((int[]) XposedHelpers.callMethod(dm, "getDisplayIds"))[0];
+                                Object displayInfo = XposedHelpers.callMethod(dm, "getDisplayInfo", display0);
+                                final int naturalW = (Integer) XposedHelpers.callMethod(displayInfo, "getNaturalWidth");
+                                final int naturalH = (Integer) XposedHelpers.callMethod(displayInfo, "getNaturalHeight");
 
                         /* Limit max screenshot capture layer to 22000.
                         Prevents status bar and navigation bar from being captured.*/
-                        Class<?> surfaceCtrl = XposedHelpers.findClass("android.view.SurfaceControl", classLoader);
-                        final Bitmap bmp = (Bitmap) XposedHelpers.callStaticMethod(surfaceCtrl, "screenshot",
-                             new Rect(), naturalW, naturalH, 0, 22000, false, Surface.ROTATION_0);
-                        if (bmp == null) return;
+                                Class<?> surfaceCtrl = XposedHelpers.findClass("android.view.SurfaceControl", classLoader);
+                                final Bitmap bmp = (Bitmap) XposedHelpers.callStaticMethod(surfaceCtrl, "screenshot",
+                                        new Rect(), naturalW, naturalH, 0, 22000, false, Surface.ROTATION_0);
+                                if (bmp == null) return;
 
-                        final Handler h = (Handler) XposedHelpers.getObjectField(param.thisObject, "mHandler");
-                        new Thread(new Runnable() {
-                             @Override
-                             public void run() {
-                                 final WakeLock wakeLock = mPm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
-                                 wakeLock.acquire(10000);
-                                 Bitmap tmpBmp = bmp;
-                                 int width = bmp.getWidth();
-                                 int height = bmp.getHeight();
-                                 // scale image (keeping aspect ratio) if it is too large
-                                 if (width * height > 1440000) {
-                                     int newWidth = (width < height) ? 900 : 1600;
-                                     float factor = newWidth / (float) width;
-                                     int newHeight = (int) (height * factor);
-                                     if (DEBUG_KIS) log("requestPowerState: scaled image res (WxH):"
-                                             + newWidth + "x" + newHeight);
-                                     tmpBmp = Bitmap.createScaledBitmap(bmp, newWidth, newHeight, true);
-                                 }
-        
-                                 final ByteArrayOutputStream os = new ByteArrayOutputStream();
-                                 tmpBmp.compress(CompressFormat.PNG, 100, os);
-                                 try {
-                                    os.close();
-                                 } catch (IOException e1) { }
-                                 bmp.recycle();
-                                 tmpBmp.recycle();
-                                 mKisImageStream = new ByteArrayInputStream(os.toByteArray());
+                                final Handler h = (Handler) XposedHelpers.getObjectField(param.thisObject, "mHandler");
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        final WakeLock wakeLock = mPm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+                                        wakeLock.acquire(10000);
+                                        Bitmap tmpBmp = bmp;
+                                        int width = bmp.getWidth();
+                                        int height = bmp.getHeight();
+                                        // scale image (keeping aspect ratio) if it is too large
+                                        if (width * height > 1440000) {
+                                            int newWidth = (width < height) ? 900 : 1600;
+                                            float factor = newWidth / (float) width;
+                                            int newHeight = (int) (height * factor);
+                                            if (DEBUG_KIS)
+                                                log("requestPowerState: scaled image res (WxH):"
+                                                        + newWidth + "x" + newHeight);
+                                            tmpBmp = Bitmap.createScaledBitmap(bmp, newWidth, newHeight, true);
+                                        }
 
-                                 if (mKisClient == null) {
-                                     mKisClient = new Messenger(new Handler(h.getLooper()) {
-                                         @Override
-                                         public void handleMessage(Message msg) {
-                                             if (DEBUG_KIS) log("mKisClient: got reply: what=" + msg.what);
-                                             try {
-                                                 if (msg.what == KeyguardImageService.MSG_GET_NEXT_CHUNK) {
-                                                     byte[] data = new byte[204800];
-                                                     if (mKisImageStream.read(data) != -1) {
-                                                         Bundle bundle = new Bundle();
-                                                         bundle.putByteArray("data", data);
-                                                         Message dataMsg = Message.obtain(null, KeyguardImageService.MSG_WRITE_OUTPUT);
-                                                         dataMsg.setData(bundle);
-                                                         dataMsg.replyTo = mKisClient;
-                                                         mKisService.send(dataMsg);
-                                                         if (DEBUG_KIS) log("mKisClient: MSG_WRITE_OUTPUT sent");
-                                                     } else {
-                                                         msg = Message.obtain(null, KeyguardImageService.MSG_FINISH_OUTPUT);
-                                                         mKisService.send(msg);
-                                                         mContext.unbindService(mKisServiceConn);
-                                                         if (wakeLock != null && wakeLock.isHeld()) {
-                                                             wakeLock.release();
-                                                         }
-                                                         mKisService = null;
-                                                         mKisServiceConn = null;
-                                                         if (DEBUG_KIS) log("mKisClient: MSG_FINISH_OUTPUT sent");
-                                                     }
-                                                 } else if (msg.what == KeyguardImageService.MSG_ERROR) {
-                                                     mContext.unbindService(mKisServiceConn);
-                                                     if (wakeLock != null && wakeLock.isHeld()) {
-                                                         wakeLock.release();
-                                                     }
-                                                     mKisService = null;
-                                                     mKisServiceConn = null;
-                                                     log("mKisClient: MSG_ERROR received");
-                                                 }
-                                             } catch (Throwable t) {
-                                                 XposedBridge.log(t);
-                                             }
-                                         }
-                                     });
-                                 }
+                                        final ByteArrayOutputStream os = new ByteArrayOutputStream();
+                                        tmpBmp.compress(CompressFormat.PNG, 100, os);
+                                        try {
+                                            os.close();
+                                        } catch (IOException e1) {
+                                        }
+                                        bmp.recycle();
+                                        tmpBmp.recycle();
+                                        mKisImageStream = new ByteArrayInputStream(os.toByteArray());
 
-                                 mKisServiceConn = new ServiceConnection() {
-                                     @Override
-                                     public void onServiceConnected(ComponentName cn, IBinder binder) {
-                                         try {
-                                             mKisService = new Messenger(binder);
-                                             Message msg = Message.obtain(null, KeyguardImageService.MSG_BEGIN_OUTPUT);
-                                             msg.replyTo = mKisClient;
-                                             mKisService.send(msg);
-                                             if (DEBUG_KIS) log("mKisServiceConn: onServiceConnected");
-                                         } catch (Throwable t) {
-                                             XposedBridge.log(t);;
-                                         }
-                                     }
-                                     @Override
-                                     public void onServiceDisconnected(ComponentName cn) {
-                                         if (wakeLock != null && wakeLock.isHeld()) {
-                                             wakeLock.release();
-                                         }
-                                         mKisService = null;
-                                         mKisServiceConn = null;
-                                         if (DEBUG_KIS) log("mKisServiceConn: onServiceDisconnected");
-                                     } 
-                                 };
-                                 ComponentName cn = new ComponentName(GravityBox.PACKAGE_NAME, KeyguardImageService.class.getName());
-                                 Intent intent = new Intent();
-                                 intent.setComponent(cn);
-                                 mContext.bindService(intent, mKisServiceConn, Context.BIND_AUTO_CREATE);
-                             }
-                         }).start();;
-                    }
-                }
-            });
+                                        if (mKisClient == null) {
+                                            mKisClient = new Messenger(new Handler(h.getLooper()) {
+                                                @Override
+                                                public void handleMessage(Message msg) {
+                                                    if (DEBUG_KIS)
+                                                        log("mKisClient: got reply: what=" + msg.what);
+                                                    try {
+                                                        if (msg.what == KeyguardImageService.MSG_GET_NEXT_CHUNK) {
+                                                            byte[] data = new byte[204800];
+                                                            if (mKisImageStream.read(data) != -1) {
+                                                                Bundle bundle = new Bundle();
+                                                                bundle.putByteArray("data", data);
+                                                                Message dataMsg = Message.obtain(null, KeyguardImageService.MSG_WRITE_OUTPUT);
+                                                                dataMsg.setData(bundle);
+                                                                dataMsg.replyTo = mKisClient;
+                                                                mKisService.send(dataMsg);
+                                                                if (DEBUG_KIS)
+                                                                    log("mKisClient: MSG_WRITE_OUTPUT sent");
+                                                            } else {
+                                                                msg = Message.obtain(null, KeyguardImageService.MSG_FINISH_OUTPUT);
+                                                                mKisService.send(msg);
+                                                                mContext.unbindService(mKisServiceConn);
+                                                                if (wakeLock != null && wakeLock.isHeld()) {
+                                                                    wakeLock.release();
+                                                                }
+                                                                mKisService = null;
+                                                                mKisServiceConn = null;
+                                                                if (DEBUG_KIS)
+                                                                    log("mKisClient: MSG_FINISH_OUTPUT sent");
+                                                            }
+                                                        } else if (msg.what == KeyguardImageService.MSG_ERROR) {
+                                                            mContext.unbindService(mKisServiceConn);
+                                                            if (wakeLock != null && wakeLock.isHeld()) {
+                                                                wakeLock.release();
+                                                            }
+                                                            mKisService = null;
+                                                            mKisServiceConn = null;
+                                                            log("mKisClient: MSG_ERROR received");
+                                                        }
+                                                    } catch (Throwable t) {
+                                                        XposedBridge.log(t);
+                                                    }
+                                                }
+                                            });
+                                        }
+
+                                        mKisServiceConn = new ServiceConnection() {
+                                            @Override
+                                            public void onServiceConnected(ComponentName cn, IBinder binder) {
+                                                try {
+                                                    mKisService = new Messenger(binder);
+                                                    Message msg = Message.obtain(null, KeyguardImageService.MSG_BEGIN_OUTPUT);
+                                                    msg.replyTo = mKisClient;
+                                                    mKisService.send(msg);
+                                                    if (DEBUG_KIS)
+                                                        log("mKisServiceConn: onServiceConnected");
+                                                } catch (Throwable t) {
+                                                    XposedBridge.log(t);
+                                                    ;
+                                                }
+                                            }
+
+                                            @Override
+                                            public void onServiceDisconnected(ComponentName cn) {
+                                                if (wakeLock != null && wakeLock.isHeld()) {
+                                                    wakeLock.release();
+                                                }
+                                                mKisService = null;
+                                                mKisServiceConn = null;
+                                                if (DEBUG_KIS)
+                                                    log("mKisServiceConn: onServiceDisconnected");
+                                            }
+                                        };
+                                        ComponentName cn = new ComponentName(GravityBox.PACKAGE_NAME, KeyguardImageService.class.getName());
+                                        Intent intent = new Intent();
+                                        intent.setComponent(cn);
+                                        mContext.bindService(intent, mKisServiceConn, Context.BIND_AUTO_CREATE);
+                                    }
+                                }).start();
+                                ;
+                            }
+                        }
+                    });
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
@@ -539,7 +553,7 @@ public class ModDisplay {
 
         if (useSwAutobrightness) {
             // brightness array must have one more element than lux array
-            int[] brightnessAdj = new int[lux.length+1];
+            int[] brightnessAdj = new int[lux.length + 1];
             for (int i = 0; i < brightnessAdj.length; i++) {
                 if (i < brightness.length) {
                     brightnessAdj[i] = brightness[i];
@@ -547,12 +561,12 @@ public class ModDisplay {
                     brightnessAdj[i] = 255;
                 }
             }
-            if (DEBUG) log("updateAutobrightnessConfig: lux=" + Utils.intArrayToString(lux) + 
+            if (DEBUG) log("updateAutobrightnessConfig: lux=" + Utils.intArrayToString(lux) +
                     "; brightnessAdj=" + Utils.intArrayToString(brightnessAdj));
 
             if (Utils.isMtkDevice()) {
                 try {
-                    mtkVirtualValues = (boolean)XposedHelpers.getStaticBooleanField(
+                    mtkVirtualValues = (boolean) XposedHelpers.getStaticBooleanField(
                             mDisplayPowerController.getClass(), "MTK_ULTRA_DIMMING_SUPPORT");
                     int resId = res.getIdentifier("config_screenBrightnessVirtualValues",
                             "bool", "android");
@@ -561,27 +575,27 @@ public class ModDisplay {
                     }
                     mtkVirtualValuesSupport = true;
                     if (DEBUG) log("MTK brightness virtual values: " + mtkVirtualValues);
-                } catch (Throwable t) { 
+                } catch (Throwable t) {
                     if (DEBUG) log("Couldn't detect MTK virtual values feature");
                 }
             }
 
             Object autoBrightnessSpline = mtkVirtualValuesSupport ? XposedHelpers.callMethod(
                     mDisplayPowerController, "createAutoBrightnessSpline",
-                        lux, brightnessAdj, mtkVirtualValues) :
-                            XposedHelpers.callMethod(mDisplayPowerController,
-                                    "createAutoBrightnessSpline", lux, brightnessAdj);
+                    lux, brightnessAdj, mtkVirtualValues) :
+                    XposedHelpers.callMethod(mDisplayPowerController,
+                            "createAutoBrightnessSpline", lux, brightnessAdj);
             if (autoBrightnessSpline != null) {
                 Object abrCtrl = XposedHelpers.getObjectField(mDisplayPowerController,
                         "mAutomaticBrightnessController");
-                XposedHelpers.setObjectField(abrCtrl, 
+                XposedHelpers.setObjectField(abrCtrl,
                         "mScreenAutoBrightnessSpline", autoBrightnessSpline);
                 if (brightnessAdj[0] < screenBrightnessMinimum) {
                     screenBrightnessMinimum = brightnessAdj[0];
                 }
             } else {
                 XposedHelpers.setBooleanField(mDisplayPowerController, "mUseSoftwareAutoBrightnessConfig", false);
-                log("Error computing auto-brightness spline: lux=" + Utils.intArrayToString(lux) + 
+                log("Error computing auto-brightness spline: lux=" + Utils.intArrayToString(lux) +
                         "; brightnessAdj=" + Utils.intArrayToString(brightnessAdj));
             }
         }
@@ -590,7 +604,7 @@ public class ModDisplay {
                 (Integer) XposedHelpers.callMethod(mDisplayPowerController, "clampAbsoluteBrightness",
                         screenBrightnessMinimum, mtkVirtualValues) :
                 (Integer) XposedHelpers.callMethod(
-                mDisplayPowerController, "clampAbsoluteBrightness", screenBrightnessMinimum);
+                        mDisplayPowerController, "clampAbsoluteBrightness", screenBrightnessMinimum);
         XposedHelpers.setIntField(mDisplayPowerController, "mScreenBrightnessRangeMinimum",
                 screenBrightnessRangeMinimum);
 

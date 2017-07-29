@@ -81,6 +81,7 @@ public class ModLockscreen {
     private static final String CLASS_CARRIER_TEXT = CLASS_PATH + ".CarrierText";
     private static final String CLASS_NOTIF_ROW = "com.android.systemui.statusbar.ExpandableNotificationRow";
     private static final String CLASS_KG_BOTTOM_AREA_VIEW = "com.android.systemui.statusbar.phone.KeyguardBottomAreaView";
+    private static final String CLASS_LOCK_ICON = "com.android.systemui.statusbar.phone.LockIcon";
     private static final String CLASS_SCRIM_CONTROLLER = "com.android.systemui.statusbar.phone.ScrimController";
 
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -490,8 +491,7 @@ public class ModLockscreen {
                                     "id", PACKAGE_NAME);
                             if (containerId == 0) {
                                 // fallback to AOSP container
-                                containerId = res.getIdentifier(Utils.isOxygenOs45Rom() ? "clock_view" :
-                                        "keyguard_clock_container", "id", PACKAGE_NAME);
+                                containerId = res.getIdentifier("keyguard_clock_container", "id", PACKAGE_NAME);
                             }
                             if (containerId != 0) {
                                 ViewGroup container = (ViewGroup) kgStatusView.findViewById(containerId);
@@ -598,7 +598,19 @@ public class ModLockscreen {
                                 }
                             }
                         });
-
+                XposedHelpers.findAndHookMethod(CLASS_KG_BOTTOM_AREA_VIEW, classLoader, "onUnlockMethodStateChanged", new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        log("onUnlockMethodStateChanged");
+                        Object o = XposedHelpers.getObjectField(param.thisObject, "mLockIcon");
+                        boolean unLock = ((Number) XposedHelpers.callMethod(o, "getState")).intValue() == 1;
+                        if (unLock) {
+                            if (canTriggerSmartUnlock()) {
+                                XposedHelpers.callMethod(mPhoneStatusBar, "makeExpandedInvisible");
+                            }
+                        }
+                    }
+                });
                 XposedBridge.hookAllMethods(XposedHelpers.findClass(CLASS_KG_BOTTOM_AREA_VIEW, classLoader),
                         "launchCamera", new XC_MethodHook() {
                             @Override
@@ -681,7 +693,8 @@ public class ModLockscreen {
     }
 
     private static boolean canTriggerSmartUnlock() {
-        return (mSmartUnlock && canTriggerUnlock(mSmartUnlockPolicy));
+        boolean b = canTriggerUnlock(mSmartUnlockPolicy);
+        return (mSmartUnlock && b);
     }
 
     private static boolean canTriggerUnlock(UnlockPolicy policy) {
@@ -736,15 +749,6 @@ public class ModLockscreen {
                     final Object lockPatternUtils = XposedHelpers.getObjectField(securityView, "mLockPatternUtils");
                     final Object lockSettings = XposedHelpers.callMethod(lockPatternUtils, "getLockSettings");
                     final int userId = mKgMonitor.getCurrentUserId();
-                    Method[] methods = lockSettings.getClass().getDeclaredMethods();
-                    for (Method method : methods) {
-                        Class[] types = method.getParameterTypes();
-                        StringBuilder builder = new StringBuilder();
-                        for (Class type : types) {
-                            builder.append(type.getName()).append(" , ");
-                        }
-                        log(method.getName() + ": " + builder);
-                    }
                     Object response = null;
                     try {
                         response = XposedHelpers.callMethod(lockSettings, "checkPassword", entry, userId, null);

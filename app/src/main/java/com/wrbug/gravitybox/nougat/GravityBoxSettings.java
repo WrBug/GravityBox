@@ -1035,7 +1035,8 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                 isTablet = data.getBoolean("isTablet");
             }
             if (data.containsKey("hasNavigationBar")) {
-                hasNavigationBar = data.getBoolean("hasNavigationBar");
+//                hasNavigationBar = data.getBoolean("hasNavigationBar");
+                hasNavigationBar=true;
             }
             if (data.containsKey("unplugTurnsOnScreen")) {
                 unplugTurnsOnScreen = data.getBoolean("unplugTurnsOnScreen");
@@ -2149,10 +2150,10 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
         }
 
         private void setDefaultValues() {
-            if (!mPrefs.getBoolean(PREF_KEY_NAVBAR_ENABLE + "_set", false)) {
-                mPrefs.edit().putBoolean(PREF_KEY_NAVBAR_ENABLE, sSystemProperties.hasNavigationBar).commit();
-                mPrefNavbarEnable.setChecked(sSystemProperties.hasNavigationBar);
-            }
+//            if (!mPrefs.getBoolean(PREF_KEY_NAVBAR_ENABLE + "_set", false)) {
+//                mPrefs.edit().putBoolean(PREF_KEY_NAVBAR_ENABLE, sSystemProperties.hasNavigationBar).commit();
+//                mPrefNavbarEnable.setChecked(sSystemProperties.hasNavigationBar);
+//            }
 
             if (!mPrefs.getBoolean(PREF_KEY_UNPLUG_TURNS_ON_SCREEN + "_set", false)) {
                 mPrefs.edit().putBoolean(PREF_KEY_UNPLUG_TURNS_ON_SCREEN,

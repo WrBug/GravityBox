@@ -34,6 +34,7 @@ import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -52,7 +53,7 @@ import android.widget.LinearLayout;
 
 public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManagerListener {
     public static final String TAG = "GB:StatusbarSignalCluster";
-    protected static final boolean DEBUG = BuildConfig.DEBUG;
+    protected static final boolean DEBUG = false;
 
     protected static XSharedPreferences sPrefs;
 
@@ -94,7 +95,12 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
     }
 
     // Signal activity
-    enum SignalType { WIFI, MOBILE };
+    enum SignalType {
+        WIFI, MOBILE
+    }
+
+    ;
+
     class SignalActivity {
         boolean enabled;
         boolean activityIn;
@@ -158,7 +164,8 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                 }
                 activityView.setVisibility(activityIn || activityOut ?
                         View.VISIBLE : View.GONE);
-                if (DEBUG) log("SignalActivity: " + signalType + ": data activity indicators updated");
+                if (DEBUG)
+                    log("SignalActivity: " + signalType + ": data activity indicators updated");
             }
         }
 
@@ -175,7 +182,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                 imageDataInOut = mIconManager.applyDataActivityColorFilter(imageDataInOut);
             }
         }
-    } 
+    }
 
     public static void initResources(XSharedPreferences prefs, InitPackageResourcesParam resparam) {
         XModuleResources modRes = XModuleResources.createInstance(GravityBox.MODULE_PATH, resparam.res);
@@ -185,15 +192,15 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
 
             sQsHpResId = XResources.getFakeResId(modRes, R.drawable.ic_qs_signal_hp);
             sSbHpResId = XResources.getFakeResId(modRes, R.drawable.stat_sys_data_fully_connected_hp);
-    
+
             resparam.res.setReplacement(sQsHpResId, modRes.fwd(R.drawable.ic_qs_signal_hp));
             resparam.res.setReplacement(sSbHpResId, modRes.fwd(R.drawable.stat_sys_data_fully_connected_hp));
-    
-            DATA_HP = new int[][] {
-                    { sSbHpResId, sSbHpResId, sSbHpResId, sSbHpResId },
-                    { sSbHpResId, sSbHpResId, sSbHpResId, sSbHpResId }
+
+            DATA_HP = new int[][]{
+                    {sSbHpResId, sSbHpResId, sSbHpResId, sSbHpResId},
+                    {sSbHpResId, sSbHpResId, sSbHpResId, sSbHpResId}
             };
-            QS_DATA_HP = new int[] { sQsHpResId, sQsHpResId };
+            QS_DATA_HP = new int[]{sQsHpResId, sQsHpResId};
             if (DEBUG) log("H+ icon resources initialized");
         }
 
@@ -205,7 +212,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
     }
 
     public static StatusbarSignalCluster create(ContainerType containerType,
-            LinearLayout view, XSharedPreferences prefs) throws Throwable {
+                                                LinearLayout view, XSharedPreferences prefs) throws Throwable {
         sPrefs = prefs;
         return new StatusbarSignalCluster(containerType, view);
     }
@@ -254,7 +261,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                             List<Object> phoneStates = (List<Object>) XposedHelpers.getObjectField(
                                     param.thisObject, "mPhoneStates");
                             ViewGroup mobileGroup = (ViewGroup) XposedHelpers.getObjectField(
-                                phoneStates.get(0), "mMobileGroup");
+                                    phoneStates.get(0), "mMobileGroup");
                             View nestedGroup = null;
                             int resId = mResources.getIdentifier("mobile_combo", "id",
                                     ModStatusBar.PACKAGE_NAME);
@@ -263,7 +270,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                             }
                             mMobileActivity = new SignalActivity((nestedGroup instanceof ViewGroup) ?
                                     (ViewGroup) nestedGroup : mobileGroup, SignalType.MOBILE,
-                                Gravity.BOTTOM | Gravity.END);
+                                    Gravity.BOTTOM | Gravity.END);
                         }
 
                         if (mNetworkTypeIndicatorsDisabled) {
@@ -302,21 +309,21 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                     if (Utils.isOxygenOs35Rom()) {
                         XposedHelpers.findAndHookMethod(mView.getClass(), "setNoSims",
                                 boolean.class, new XC_MethodHook() {
-                            @Override
-                            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                                View v = (View) XposedHelpers.getObjectField(mView, "mMobileSignalGroup");
-                                if (v != null) v.setVisibility(
-                                        (boolean)param.args[0] ? View.GONE : View.VISIBLE);
-                            }
-                        });
+                                    @Override
+                                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                                        View v = (View) XposedHelpers.getObjectField(mView, "mMobileSignalGroup");
+                                        if (v != null) v.setVisibility(
+                                                (boolean) param.args[0] ? View.GONE : View.VISIBLE);
+                                    }
+                                });
                     } else {
                         XposedHelpers.findAndHookMethod(mView.getClass(), "setNoSims",
                                 boolean.class, new XC_MethodHook() {
-                            @Override
-                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                                param.args[0] = false;
-                            }
-                        });
+                                    @Override
+                                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                        param.args[0] = false;
+                                    }
+                                });
                     }
                 } catch (Throwable t) {
                     log("Error hooking setNoSims: " + t.getMessage());
@@ -359,11 +366,11 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
             try {
                 final Class<?> mobileNetworkCtrlClass = Utils.isMotoXtDevice() ?
                         XposedHelpers.findClass(
-                        "com.android.systemui.statusbar.policy.MotorolaMobileSignalController", 
-                        mView.getContext().getClassLoader()) :
+                                "com.android.systemui.statusbar.policy.MotorolaMobileSignalController",
+                                mView.getContext().getClassLoader()) :
                         XposedHelpers.findClass(
-                        "com.android.systemui.statusbar.policy.MobileSignalController", 
-                        mView.getContext().getClassLoader());
+                                "com.android.systemui.statusbar.policy.MobileSignalController",
+                                mView.getContext().getClassLoader());
 
                 XposedHelpers.findAndHookMethod(mobileNetworkCtrlClass, "mapIconSets", new XC_MethodHook() {
                     @SuppressWarnings("unchecked")
@@ -458,11 +465,11 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                 "com.android.systemui.statusbar.policy.TelephonyIcons";
         Class<?> clsWifiIcons = null;
         Class<?> clsTelephonyIcons = null;
-        final String[] wifiFields = new String[] {
+        final String[] wifiFields = new String[]{
                 "WIFI_SIGNAL_STRENGTH", "WIFI_SIGNAL_STRENGTH_NARROW", "WIFI_SIGNAL_STRENGTH_WIDE"
         };
-        final String[] mobileFields = new String[] {
-                "TELEPHONY_SIGNAL_STRENGTH", "TELEPHONY_SIGNAL_STRENGTH_ROAMING", 
+        final String[] mobileFields = new String[]{
+                "TELEPHONY_SIGNAL_STRENGTH", "TELEPHONY_SIGNAL_STRENGTH_ROAMING",
                 "DATA_SIGNAL_STRENGTH", "SB_TELEPHONY_SIGNAL_STRENGTH_4_BAR_NARROW",
                 "SB_TELEPHONY_SIGNAL_STRENGTH_4_BAR_SEPARATED_NARROW", "SB_TELEPHONY_SIGNAL_STRENGTH_4_BAR_SEPARATED_WIDE",
                 "SB_TELEPHONY_SIGNAL_STRENGTH_4_BAR_WIDE", "SB_TELEPHONY_SIGNAL_STRENGTH_5_BAR_NARROW",
@@ -475,11 +482,13 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
         // Get classes
         try {
             clsWifiIcons = XposedHelpers.findClass(CLASS_WIFI_ICONS, cl);
-        } catch (Throwable t) { }
+        } catch (Throwable t) {
+        }
 
         try {
             clsTelephonyIcons = XposedHelpers.findClass(CLASS_TELEPHONY_ICONS, cl);
-        } catch (Throwable t) { }
+        } catch (Throwable t) {
+        }
 
         // WiFi
         for (String field : wifiFields) {
@@ -524,7 +533,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
         }
     }
 
-    protected void initPreferences() { 
+    protected void initPreferences() {
         mDataActivityEnabled = mContainerType != ContainerType.HEADER &&
                 !Utils.isOxygenOs35Rom() &&
                 sPrefs.getBoolean(GravityBoxSettings.PREF_KEY_SIGNAL_CLUSTER_DATA_ACTIVITY, false);
@@ -548,10 +557,10 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
     protected void setNetworkController(Object networkController) {
         final ClassLoader classLoader = mView.getClass().getClassLoader();
         final Class<?> networkCtrlCbClass = XposedHelpers.findClass("com.android.systemui.statusbar.policy.NetworkController.SignalCallback", classLoader);
-        mNetworkControllerCallback = Proxy.newProxyInstance(classLoader, 
-                new Class<?>[] { networkCtrlCbClass }, new NetworkControllerCallback());
-            XposedHelpers.callMethod(networkController, "addSignalCallback",
-                    mNetworkControllerCallback);
+        mNetworkControllerCallback = Proxy.newProxyInstance(classLoader,
+                new Class<?>[]{networkCtrlCbClass}, new NetworkControllerCallback());
+        XposedHelpers.callMethod(networkController, "addSignalCallback",
+                mNetworkControllerCallback);
         if (DEBUG) log("setNetworkController: callback registered");
     }
 
@@ -567,6 +576,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
     }
 
     protected int mobileGroupIdx;
+
     protected void updateIconColorRecursive(ViewGroup vg) {
         if (mIconManager == null) return;
 
@@ -574,7 +584,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
         for (int i = 0; i < count; i++) {
             View child = vg.getChildAt(i);
             if (child instanceof ViewGroup) {
-                if (child.getId() != View.NO_ID) { 
+                if (child.getId() != View.NO_ID) {
                     String resName = mResources.getResourceEntryName(child.getId());
                     if (resName.startsWith("mobile_combo")) {
                         mobileGroupIdx++;
@@ -609,7 +619,7 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
             if (mBatteryStyle == GravityBoxSettings.BATTERY_STYLE_NONE) {
                 if ((mContainerType == ContainerType.STATUSBAR && !mPercentTextSb) ||
                         (mContainerType == ContainerType.KEYGUARD)) {
-                    padding = Math.round((float)mBatteryPaddingOriginal / 4f);
+                    padding = Math.round((float) mBatteryPaddingOriginal / 4f);
                 }
             }
             XposedHelpers.setIntField(mView, "mEndPadding", padding);
@@ -654,12 +664,12 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                     }
                     if (DEBUG) {
                         log("WiFi enabled: " + args[enabledIdx]);
-                        log("WiFi activity in: " + (Boolean)args[inIdx]);
-                        log("WiFi activity out: " + (Boolean)args[outIdx]);
+                        log("WiFi activity in: " + (Boolean) args[inIdx]);
+                        log("WiFi activity out: " + (Boolean) args[outIdx]);
                     }
                     if (mWifiActivity != null) {
-                        mWifiActivity.update((Boolean)args[enabledIdx],
-                                (Boolean)args[inIdx], (Boolean)args[outIdx]);
+                        mWifiActivity.update((Boolean) args[enabledIdx],
+                                (Boolean) args[inIdx], (Boolean) args[outIdx]);
                     }
                 } else if (methodName.equals("setMobileDataIndicators")) {
                     //int enabledIdx = 0;
@@ -672,12 +682,12 @@ public class StatusbarSignalCluster implements BroadcastSubReceiver, IconManager
                     }
                     if (DEBUG) {
                         //log("Mobile data enabled: " + args[enabledIdx]);
-                        log("Mobile data activity in: " + (Boolean)args[inIdx]);
-                        log("Mobile data activity out: " + (Boolean)args[outIdx]);
+                        log("Mobile data activity in: " + (Boolean) args[inIdx]);
+                        log("Mobile data activity out: " + (Boolean) args[outIdx]);
                     }
                     if (mMobileActivity != null) {
-                        mMobileActivity.update(true, 
-                                (Boolean)args[inIdx], (Boolean)args[outIdx]);
+                        mMobileActivity.update(true,
+                                (Boolean) args[inIdx], (Boolean) args[outIdx]);
                     }
                 }
             } catch (Throwable t) {
