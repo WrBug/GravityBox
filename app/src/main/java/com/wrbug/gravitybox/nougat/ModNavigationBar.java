@@ -1040,6 +1040,9 @@ public class ModNavigationBar {
     }
 
     private static void log(ViewGroup b) {
+        if (!DEBUG) {
+            return;
+        }
         log("--------------");
         log(b.toString());
         for (int i = 0; i < b.getChildCount(); i++) {

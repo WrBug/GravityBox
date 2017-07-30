@@ -11,7 +11,7 @@ GravityBox[NG] is base on [GravityBox[MM]][1] , the current version is beta and 
 
 ## Release Note
 
-### v1.0.2-beta ()
+### v1.0.2-beta (2017-7-30)
 
 - fit the android 7.0 devices
 - Add to support OxygenOs-Dev
