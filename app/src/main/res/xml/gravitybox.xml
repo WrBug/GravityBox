@@ -1340,7 +1340,11 @@
         <PreferenceCategory
             android:key="pref_cat_navbar_general"
             android:title="@string/pref_cat_navbar_general_title">
-
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="pref_hide_navi_bar"
+                android:summary="@string/pref_hide_navigation_bar_summary"
+                android:title="@string/pref_hide_navigation_bar"/>
             <SwitchPreference
                 android:defaultValue="false"
                 android:key="pref_navbar_override"

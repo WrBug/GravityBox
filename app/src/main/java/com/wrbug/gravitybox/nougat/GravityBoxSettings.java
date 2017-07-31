@@ -589,6 +589,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final String PREF_CAT_KEY_NAVBAR_KEYS = "pref_cat_navbar_keys";
     public static final String PREF_CAT_KEY_NAVBAR_COLOR = "pref_cat_navbar_color";
     public static final String PREF_CAT_KEY_NAVBAR_DIMEN = "pref_cat_navbar_dimen";
+    public static final String PREF_KEY_HIDE_NAVI_BAR = "pref_hide_navi_bar";
     public static final String PREF_KEY_NAVBAR_OVERRIDE = "pref_navbar_override";
     public static final String PREF_KEY_NAVBAR_ENABLE = "pref_navbar_enable";
     public static final String PREF_KEY_NAVBAR_LEFT_HANDED = "pref_navbar_left_handed";
@@ -614,6 +615,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final String PREF_KEY_NAVBAR_AUTOFADE_SHOW_KEYS = "pref_navbar_autofade_show_keys";
     public static final String ACTION_PREF_NAVBAR_CHANGED = "gravitybox.intent.action.ACTION_NAVBAR_CHANGED";
     public static final String ACTION_PREF_NAVBAR_SWAP_KEYS = "gravitybox.intent.action.ACTION_NAVBAR_SWAP_KEYS";
+    public static final String ACTION_PREF_HIDE_NAVBAR = "gravitybox.intent.action.ACTION_HIDE_NAVBAR";
     public static final String EXTRA_NAVBAR_HEIGHT = "navbarHeight";
     public static final String EXTRA_NAVBAR_HEIGHT_LANDSCAPE = "navbarHeightLandscape";
     public static final String EXTRA_NAVBAR_WIDTH = "navbarWidth";
@@ -1036,7 +1038,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             }
             if (data.containsKey("hasNavigationBar")) {
 //                hasNavigationBar = data.getBoolean("hasNavigationBar");
-                hasNavigationBar=true;
+                hasNavigationBar = true;
             }
             if (data.containsKey("unplugTurnsOnScreen")) {
                 unplugTurnsOnScreen = data.getBoolean("unplugTurnsOnScreen");
@@ -1725,7 +1727,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             getPreferenceScreen().removePreference(mPrefCatMtkFixes);
             //}
 
-            // Filter preferences according to feature availability 
+            // Filter preferences according to feature availability
             if (!Utils.hasFlash(getActivity())) {
                 mPrefCatHwKeyOthers.removePreference(mPrefHwKeyLockscreenTorch);
                 mPrefCatMiscOther.removePreference(mPrefTorchAutoOff);
@@ -1882,6 +1884,8 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                 if (p != null) ps.removePreference(p);
                 p = findPreference(PREF_KEY_NAVBAR_SWAP_KEYS);
                 if (p != null) mPrefCatNavbarKeys.removePreference(p);
+                p = findPreference(PREF_KEY_HIDE_NAVI_BAR);
+                if (p != null) mPrefCatNavbarKeys.removePreference(p);
                 mPrefCatPower.removePreference(mPrefCatPowerMenu);
                 p = findPreference(PREF_CAT_KEY_BATTERY_TILE);
                 if (p != null) mPrefCatQsTileSettings.removePreference(p);
@@ -1990,6 +1994,33 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             checkPermissions();
         }
 
+        @Override
+        public void onStart() {
+            super.onStart();
+            mPrefs.registerOnSharedPreferenceChangeListener(this);
+            updatePreferences(null);
+        }
+
+        @Override
+        public void onPause() {
+            if (mTransWebServiceClient != null) {
+                mTransWebServiceClient.abortTaskIfRunning();
+            }
+
+            if (mDialog != null && mDialog.isShowing()) {
+                mDialog.dismiss();
+                mDialog = null;
+            }
+
+            super.onPause();
+        }
+
+        @Override
+        public void onStop() {
+            mPrefs.unregisterOnSharedPreferenceChangeListener(this);
+            super.onStop();
+        }
+
         private void initFingerprintLauncher() {
             PreferenceCategory catFingers = (PreferenceCategory) findPreference(
                     PREF_CAT_KEY_FINGERPRINT_LAUNCHER_FINGERS);
@@ -2095,33 +2126,6 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             } else {
                 maybeShowCompatWarningDialog();
             }
-        }
-
-        @Override
-        public void onPause() {
-            if (mTransWebServiceClient != null) {
-                mTransWebServiceClient.abortTaskIfRunning();
-            }
-
-            if (mDialog != null && mDialog.isShowing()) {
-                mDialog.dismiss();
-                mDialog = null;
-            }
-
-            super.onPause();
-        }
-
-        @Override
-        public void onStart() {
-            super.onStart();
-            mPrefs.registerOnSharedPreferenceChangeListener(this);
-            updatePreferences(null);
-        }
-
-        @Override
-        public void onStop() {
-            mPrefs.unregisterOnSharedPreferenceChangeListener(this);
-            super.onStop();
         }
 
         private void maybeShowCompatWarningDialog() {
@@ -2327,7 +2331,9 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                 mPrefCatNavbarColor.setEnabled(override && mPrefNavbarEnable.isChecked());
                 mPrefCatNavbarDimen.setEnabled(override && mPrefNavbarEnable.isChecked());
             }
+            if (key == null || key.equals(PREF_KEY_HIDE_NAVI_BAR)) {
 
+            }
             if (key == null || key.equals(PREF_KEY_QS_NETWORK_MODE_SIM_SLOT)) {
                 mPrefQsNetworkModeSimSlot.setSummary(
                         String.format(getString(R.string.pref_qs_network_mode_sim_slot_summary),
@@ -3159,6 +3165,9 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                         prefs.getString(PREF_KEY_NAVBAR_CUSTOM_KEY_ICON_STYLE, "SIX_DOT"));
             } else if (key.equals(PREF_KEY_NAVBAR_SWAP_KEYS)) {
                 intent.setAction(ACTION_PREF_NAVBAR_SWAP_KEYS);
+            } else if (key.equals(PREF_KEY_HIDE_NAVI_BAR)) {
+                intent.setAction(ACTION_PREF_HIDE_NAVBAR);
+                intent.putExtra(PREF_KEY_HIDE_NAVI_BAR, prefs.getBoolean(PREF_KEY_HIDE_NAVI_BAR, false));
             } else if (key.equals(PREF_KEY_NAVBAR_CURSOR_CONTROL)) {
                 intent.setAction(ACTION_PREF_NAVBAR_CHANGED);
                 intent.putExtra(EXTRA_NAVBAR_CURSOR_CONTROL,

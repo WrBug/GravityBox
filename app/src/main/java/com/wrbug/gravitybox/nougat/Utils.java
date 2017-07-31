@@ -311,6 +311,12 @@ public class Utils {
         return version.contains("Oxygen") || version.contains("Hydrogen");
     }
 
+    public static boolean isLineageOs() {
+        String flavor = SystemProp.get("ro.build.flavor", "");
+        String id = SystemProp.get("ro.build.desplay.id", "");
+        return flavor.contains("lineage") || id.contains("lineage");
+    }
+
     public static boolean hasGeminiSupport() {
         if (mHasGeminiSupport != null) return mHasGeminiSupport;
 

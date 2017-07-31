@@ -26,7 +26,10 @@ import com.wrbug.gravitybox.nougat.managers.StatusBarIconManager.IconManagerList
 
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.view.View;
+
+import java.lang.reflect.Field;
 
 public class StatusbarBattery implements IconManagerListener {
     private static final String TAG = "GB:StatusbarBattery";
@@ -49,9 +52,17 @@ public class StatusbarBattery implements IconManagerListener {
             Object drawable = getDrawable();
             final int[] colors = (int[]) XposedHelpers.getObjectField(drawable, "mColors");
             mDefaultColor = colors[colors.length - 1];
-            final Paint framePaint = (Paint) XposedHelpers.getObjectField(drawable, "mFramePaint");
-            mDefaultFrameColor = framePaint.getColor();
-            mFrameAlpha = framePaint.getAlpha();
+            if (Utils.isLineageOs()) {
+
+                Drawable frameDrawable = (Drawable) XposedHelpers.getObjectField(drawable, "mFrameDrawable");
+//                mDefaultFrameColor = frameDrawable.setTint();
+                mFrameAlpha = frameDrawable.getAlpha();
+            } else {
+                final Paint framePaint = (Paint) XposedHelpers.getObjectField(drawable, "mFramePaint");
+                mDefaultFrameColor = framePaint.getColor();
+                mFrameAlpha = framePaint.getAlpha();
+            }
+
             mDefaultChargeColor = XposedHelpers.getIntField(drawable, "mChargeColor");
         } catch (Throwable t) {
             log("Error backing up original colors: " + t.getMessage());
@@ -97,10 +108,18 @@ public class StatusbarBattery implements IconManagerListener {
                 Object drawable = getDrawable();
                 final int[] colors = (int[]) XposedHelpers.getObjectField(drawable, "mColors");
                 colors[colors.length - 1] = mainColor;
-                final Paint framePaint = (Paint) XposedHelpers.getObjectField(drawable, "mFramePaint");
-                framePaint.setColor(frameColor);
-                framePaint.setAlpha(mFrameAlpha);
-                XposedHelpers.setIntField(drawable, "mChargeColor", chargeColor);
+                if (Utils.isLineageOs()) {
+                    Drawable frameDrawable = (Drawable) XposedHelpers.getObjectField(drawable, "mFrameDrawable");
+                    frameDrawable.setAlpha(mFrameAlpha);
+                    frameDrawable.setTint(frameColor);
+                    Paint paint = (Paint) XposedHelpers.getObjectField(drawable, "mTextAndBoltPaint");
+                    paint.setColor(chargeColor);
+                } else {
+                    final Paint framePaint = (Paint) XposedHelpers.getObjectField(drawable, "mFramePaint");
+                    framePaint.setColor(frameColor);
+                    framePaint.setAlpha(mFrameAlpha);
+                    XposedHelpers.setIntField(drawable, "mChargeColor", chargeColor);
+                }
                 XposedHelpers.setIntField(drawable, "mIconTint", mainColor);
             } catch (Throwable t) {
                 XposedBridge.log(t);

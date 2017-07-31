@@ -43,6 +43,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -92,6 +93,9 @@ public class ModNavigationBar {
     private static boolean mNavbarLeftHanded;
     private static boolean mUseLargerIcons;
     private static boolean mHideImeSwitcher;
+    private static boolean sHideNavigationBar;
+    private static WindowManager sWindowManager;
+    private static ViewGroup.LayoutParams sLayoutParams;
     private static PowerManager mPm;
     private static long mLastTouchMs;
     private static int mBarModeOriginal;
@@ -273,9 +277,12 @@ public class ModNavigationBar {
                 updateRecentsKeyCode();
             } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_NAVBAR_SWAP_KEYS)) {
                 swapBackAndRecents();
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_HIDE_NAVBAR)) {
+                setNavigationBarVisible(intent.getBooleanExtra(GravityBoxSettings.PREF_KEY_HIDE_NAVI_BAR, false));
             }
         }
     };
+
 
     public static void init(final XSharedPreferences prefs, final ClassLoader classLoader) {
         try {
@@ -291,6 +298,7 @@ public class ModNavigationBar {
                 mRecentsSingletapAction = new ModHwKeys.HwKeyAction(Integer.valueOf(
                         prefs.getString(GravityBoxSettings.PREF_KEY_HWKEY_RECENTS_SINGLETAP, "0")),
                         prefs.getString(GravityBoxSettings.PREF_KEY_HWKEY_RECENTS_SINGLETAP + "_custom", null));
+                sHideNavigationBar = prefs.getBoolean(GravityBoxSettings.PREF_KEY_HIDE_NAVI_BAR, false);
                 mRecentsLongpressAction = new ModHwKeys.HwKeyAction(Integer.valueOf(
                         prefs.getString(GravityBoxSettings.PREF_KEY_HWKEY_RECENTS_LONGPRESS, "0")),
                         prefs.getString(GravityBoxSettings.PREF_KEY_HWKEY_RECENTS_LONGPRESS + "_custom", null));
@@ -354,6 +362,7 @@ public class ModNavigationBar {
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_HWKEY_CHANGED);
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_PIE_CHANGED);
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_NAVBAR_SWAP_KEYS);
+                    intentFilter.addAction(GravityBoxSettings.ACTION_PREF_HIDE_NAVBAR);
                     context.registerReceiver(mBroadcastReceiver, intentFilter);
                     if (DEBUG) log("NavigationBarView constructed; Broadcast receiver registered");
                 }
@@ -369,14 +378,19 @@ public class ModNavigationBar {
 
             XposedHelpers.findAndHookMethod(navbarViewClass, "onFinishInflate", new XC_MethodHook() {
                 @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    startHookNavigationBar(((ViewGroup) param.thisObject).getContext().getSystemService(Context.WINDOW_SERVICE).getClass());
+                }
+
+                @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    final Context context = ((View) param.thisObject).getContext();
+                    ViewGroup navigationBarView = (ViewGroup) param.thisObject;
+                    final Context context = (navigationBarView).getContext();
                     final Resources gbRes = mGbContext.getResources();
                     final int recentAppsResId = mResources.getIdentifier("recent_apps", "id", PACKAGE_NAME);
                     final int homeButtonResId = mResources.getIdentifier("home", "id", PACKAGE_NAME);
                     final View[] rotatedViews =
                             (View[]) XposedHelpers.getObjectField(param.thisObject, "mRotatedViews");
-
                     if (rotatedViews != null) {
                         mRecentsKeys = new Object[rotatedViews.length];
                         mHomeKeys = new HomeKeyInfo[rotatedViews.length];
@@ -403,7 +417,7 @@ public class ModNavigationBar {
                     ViewGroup vRot, navButtons;
 
                     // prepare keys for rot0 view
-                    vRot = (ViewGroup) ((ViewGroup) param.thisObject).findViewById(
+                    vRot = (ViewGroup) (navigationBarView).findViewById(
                             mResources.getIdentifier("rot0", "id", PACKAGE_NAME));
                     if (vRot != null) {
                         ScaleType scaleType = getIconScaleType(0, View.NO_ID);
@@ -433,7 +447,7 @@ public class ModNavigationBar {
                     }
 
                     // prepare keys for rot90 view
-                    vRot = (ViewGroup) ((ViewGroup) param.thisObject).findViewById(
+                    vRot = (ViewGroup) (navigationBarView).findViewById(
                             mResources.getIdentifier("rot90", "id", PACKAGE_NAME));
                     if (vRot != null) {
                         ScaleType scaleType = getIconScaleType(1, View.NO_ID);
@@ -676,6 +690,38 @@ public class ModNavigationBar {
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
+    }
+
+    private static void setNavigationBarVisible(boolean hide) {
+        if (hide) {
+            mNavigationBarView.setTag(false);
+            sWindowManager.removeViewImmediate(mNavigationBarView);
+        } else {
+            mNavigationBarView.setTag(true);
+            sWindowManager.addView(mNavigationBarView, sLayoutParams);
+        }
+    }
+
+    private static void startHookNavigationBar(final Class<?> windowManager) {
+        XposedHelpers.findAndHookMethod(windowManager, "addView", View.class, ViewGroup.LayoutParams.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (param.args[0].getClass().getName().contains("NavigationBarView")) {
+                    if (sWindowManager == null) {
+                        sWindowManager = (WindowManager) param.thisObject;
+                        sLayoutParams = (ViewGroup.LayoutParams) param.args[1];
+                    }
+                    if (((View) param.args[0]).getTag() == null && sHideNavigationBar) {
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                setNavigationBarVisible(true);
+                            }
+                        }, 200);
+                    }
+                }
+            }
+        });
     }
 
     private static Handler mBarModeHandler = new Handler() {
@@ -1029,9 +1075,6 @@ public class ModNavigationBar {
                     recentsViewInfo.mViewGroup.addView(backKey, recentsViewInfo.index);
                     backViewInfo.mViewGroup.addView(recentsKey, backViewInfo.index);
                 }
-                log(backViewInfo.toString());
-                log(recentsViewInfo.toString());
-                log(backViewInfo.mViewGroup);
             }
         } catch (Throwable t) {
             t.printStackTrace();
