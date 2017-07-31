@@ -118,6 +118,7 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
         if (!ArrayUtils.arrayHas(SUPPORT_SDK, Build.VERSION.SDK_INT)) {
             return;
         }
+        XposedBridge.log("processName:" + lpparam.processName + "  packageName:" + lpparam.packageName);
         if (ArrayUtils.arrayHas(LAUNCH_PACKAGE_NAME, lpparam.packageName) &&
                 lpparam.processName.equals("android")) {
             XposedBridge.log("GB:Is AOSP forced: " + Utils.isAospForced());

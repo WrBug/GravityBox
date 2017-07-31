@@ -2522,12 +2522,40 @@
             android:title="@string/pref_cat_misc_recents_panel_title">
 
             <ListPreference
-                android:defaultValue="0"
-                android:entries="@array/rambar_entries"
-                android:entryValues="@array/rambar_values"
-                android:key="pref_rambar"
-                android:title="@string/pref_rambar_title"/>
+                android:defaultValue="1"
+                android:entries="@array/recents_clear_entries"
+                android:entryValues="@array/recents_clear_values"
+                android:key="pref_recents_clear_all2"
+                android:title="@string/recents_clear_all_title"/>
 
+            <EditTextPreference
+                android:defaultValue="@string/task_clean_btn_default_text"
+                android:key="pref_task_clean_btn"
+                android:title="@string/pref_task_clean_btn_text"/>
+            <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
+                interval="1"
+                maximum="200"
+                minimum="0"
+                monitorBoxEnabled="true"
+                monitorBoxUnit="dp"
+                android:defaultValue="30"
+                android:key="pref_task_clear_btn_delta"
+                android:title="@string/pref_task_clear_btn_offset"/>
+            <!--<CheckBoxPreference-->
+            <!--android:defaultValue="false"-->
+            <!--android:key="pref_recents_clear_all_visible"-->
+            <!--android:title="@string/pref_recents_clear_all_visible_title"/>-->
+
+            <!--<CheckBoxPreference-->
+            <!--android:defaultValue="false"-->
+            <!--android:key="pref_recents_clear_all_icon_alt"-->
+            <!--android:title="@string/pref_navbar_custom_key_icon_title"/>-->
+
+            <net.margaritov.preference.colorpicker.ColorPickerPreference
+                android:defaultValue="@integer/COLOR_WHITE"
+                android:key="pref_recent_task_mask_color"
+                android:summary="@string/pref_recent_task_mask_color_summary"
+                android:title="@string/pref_recent_task_mask_color"/>
             <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
                 interval="1"
                 maximum="100"
@@ -2547,7 +2575,21 @@
                 android:defaultValue="50"
                 android:key="pref_recent_clear_margin_bottom"
                 android:title="@string/pref_recent_clear_margin_bottom_title"/>
-
+            <ListPreference
+                android:defaultValue="0"
+                android:entries="@array/rambar_entries"
+                android:entryValues="@array/rambar_values"
+                android:key="pref_rambar"
+                android:title="@string/pref_rambar_title"/>
+            <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
+                interval="1"
+                maximum="100"
+                minimum="0"
+                monitorBoxEnabled="true"
+                monitorBoxUnit="%"
+                android:defaultValue="100"
+                android:key="pref_recent_task_alpha"
+                android:title="@string/pref_recent_task_detail_alpha"/>
             <ListPreference
                 android:defaultValue="DEFAULT"
                 android:entries="@array/recents_searchbar_entries"

@@ -2143,5 +2143,10 @@
     <string name="pref_about_wrbug_summary">点击访问：https://www.wrbug.com</string>
     <string name="about_check_verison">检查更新</string>
     <string name="about_check_verison_summary">点击检查新版本</string>
-
+    <string name="pref_recent_task_detail_alpha">最近任务详情透明度</string>
+    <string name="pref_recent_task_mask_color">最近任务详情蒙版颜色</string>
+    <string name="pref_recent_task_mask_color_summary">设置最近任务详情蒙版颜色</string>
+    <string name="pref_task_clean_btn_text">清除按钮文字</string>
+    <string name="task_clean_btn_default_text">全部清除</string>
+    <string name="pref_task_clear_btn_offset">清除按钮偏移量</string>
 </resources>

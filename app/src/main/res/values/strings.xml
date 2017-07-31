@@ -2128,4 +2128,10 @@
     <string name="pref_about_wrbug_summary">Touch to visit：https://www.wrbug.com</string>
     <string name="about_check_verison">Check Update</string>
     <string name="about_check_verison_summary">Touch to find Newest Verison</string>
+    <string name="pref_recent_task_detail_alpha">Recent tasks detail alpha</string>
+    <string name="pref_recent_task_mask_color">Recent tasks detail mask color</string>
+    <string name="pref_recent_task_mask_color_summary">Setting mask color</string>
+    <string name="pref_task_clean_btn_text">Clear Button Text</string>
+    <string name="task_clean_btn_default_text">Clear All</string>
+    <string name="pref_task_clear_btn_offset">Clear Button offset</string>
 </resources>

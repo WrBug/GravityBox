@@ -161,10 +161,14 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final int VOL_KEY_CURSOR_CONTROL_ON_REVERSE = 2;
 
     public static final String PREF_KEY_RECENTS_CLEAR_ALL = "pref_recents_clear_all2";
+    public static final String PREF_KEY_RECENTS_CLEAR_ALL_BUTTON_TEXT = "pref_task_clean_btn";
     public static final String PREF_KEY_RECENTS_CLEAR_ALL_VISIBLE = "pref_recents_clear_all_visible";
     public static final String PREF_KEY_RECENTS_CLEAR_ALL_ICON_ALT = "pref_recents_clear_all_icon_alt";
     public static final String PREF_KEY_RAMBAR = "pref_rambar";
     public static final String PREF_KEY_RECENTS_CLEAR_MARGIN_TOP = "pref_recent_clear_margin_top";
+    public static final String PREF_KEY_TASK_CLEAR_BTN_OFFSET = "pref_task_clear_btn_delta";
+
+    public static final String PREF_RECENT_TASK_ALPHA = "pref_recent_task_alpha";
     public static final String PREF_KEY_RECENTS_CLEAR_MARGIN_BOTTOM = "pref_recent_clear_margin_bottom";
     public static final String PREF_KEY_RECENTS_SEARCH_BAR = "pref_recents_searchbar";
     public static final int RECENT_CLEAR_OFF = 0;
@@ -174,6 +178,9 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final int RECENT_CLEAR_BOTTOM_RIGHT = 85;
     public static final int RECENT_CLEAR_NAVIGATION_BAR = 1;
     public static final String ACTION_PREF_RECENTS_CHANGED = "gravitybox.intent.action.RECENTS_CHANGED";
+    public static final String ACTION_PREF_TASK_CLEAR_BTN_OFFSET_CHANGED = "gravitybox.intent.action.TASK_CLEAR_BTN_OFFSET_CHANGED";
+    public static final String ACTION_PREF_RECENTS_CLEAR_ALL_BTN_CHANGED = "gravitybox.intent.action.RECENTS_CLEAR_ALL_BTN_CHANGED";
+    public static final String ACTION_PREF_RECENTS_ALPHA = "gravitybox.intent.action.RECENTS_ALPHA";
     public static final String EXTRA_RECENTS_CLEAR_ALL = "recentsClearAll";
     public static final String EXTRA_RECENTS_CLEAR_ALL_VISIBLE = "recentsClearAllVisible";
     public static final String EXTRA_RECENTS_CLEAR_ALL_ICON_ALT = "recentsClearAllIconAlt";
@@ -199,6 +206,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final String PREF_CAT_KEY_STATUSBAR_COLORS = "pref_cat_statusbar_colors";
     public static final String PREF_KEY_STATUSBAR_ICON_COLOR_ENABLE = "pref_statusbar_icon_color_enable";
     public static final String PREF_KEY_STATUSBAR_ICON_COLOR = "pref_statusbar_icon_color";
+    public static final String PREF_RECENT_TASK_MASK_COLOR = "pref_recent_task_mask_color";
     public static final String PREF_KEY_STATUS_ICON_STYLE = "pref_status_icon_style";
     public static final String PREF_KEY_STATUSBAR_ICON_COLOR_SECONDARY = "pref_statusbar_icon_color_secondary";
     public static final String PREF_KEY_STATUSBAR_DATA_ACTIVITY_COLOR = "pref_signal_cluster_data_activity_color";
@@ -553,6 +561,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final String EXTRA_BATTERY_PERCENT_TEXT_CHARGING_COLOR = "batteryPercentTextChargingColor";
 
     public static final String ACTION_PREF_STATUSBAR_COLOR_CHANGED = "gravitybox.intent.action.STATUSBAR_COLOR_CHANGED";
+    public static final String ACTION_PREF_TASK_MASK_COLOR_CHANGED = "gravitybox.intent.action.TASK_MASK_COLOR_CHANGED";
     public static final String EXTRA_SB_ICON_COLOR_ENABLE = "iconColorEnable";
     public static final String EXTRA_SB_ICON_COLOR = "iconColor";
     public static final String EXTRA_SB_ICON_STYLE = "iconStyle";
@@ -1323,6 +1332,8 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
         private ListPreference mPrefPieAppLongpress;
         private ListPreference mPrefPieLongpressDelay;
         private CheckBoxPreference mPrefGbThemeDark;
+        private ListPreference mPrefCleanAllLocation;
+        private EditTextPreference mPrefCleanAllText;
         private ListPreference mPrefRambar;
         private ListPreference mPrefRecentSearchBar;
         private PreferenceScreen mPrefCatPhone;
@@ -1566,8 +1577,10 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             mPrefGbThemeDark.setChecked(file.exists());
 
             mPrefRambar = (ListPreference) findPreference(PREF_KEY_RAMBAR);
+            mPrefCleanAllLocation = (ListPreference) findPreference(PREF_KEY_RECENTS_CLEAR_ALL);
+            mPrefCleanAllText = (EditTextPreference) findPreference(PREF_KEY_RECENTS_CLEAR_ALL_BUTTON_TEXT);
             mPrefRecentSearchBar = (ListPreference) findPreference(PREF_KEY_RECENTS_SEARCH_BAR);
-
+            getPreferenceScreen().removePreference(mPrefRecentSearchBar);
             mPrefCatPhone = (PreferenceScreen) findPreference(PREF_CAT_KEY_PHONE);
 
             mPrefBrightnessMin = (SeekBarPreference) findPreference(PREF_KEY_BRIGHTNESS_MIN);
@@ -2314,7 +2327,12 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             if (key == null || key.equals(PREF_KEY_RAMBAR)) {
                 mPrefRambar.setSummary(mPrefRambar.getEntry());
             }
-
+            if (key == null || key.equals(PREF_KEY_RECENTS_CLEAR_ALL)) {
+                mPrefCleanAllLocation.setSummary(mPrefCleanAllLocation.getEntry());
+            }
+            if (key == null || key.equals(PREF_KEY_RECENTS_CLEAR_ALL_BUTTON_TEXT)) {
+                mPrefCleanAllText.setSummary(mPrefCleanAllText.getText());
+            }
             if (key == null || key.equals(PREF_KEY_RECENTS_SEARCH_BAR)) {
                 mPrefRecentSearchBar.setSummary(mPrefRecentSearchBar.getEntry());
             }
@@ -2763,6 +2781,9 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                 intent.setAction(ACTION_PREF_STATUSBAR_COLOR_CHANGED);
                 intent.putExtra(EXTRA_SB_ICON_COLOR, prefs.getInt(PREF_KEY_STATUSBAR_ICON_COLOR,
                         getResources().getInteger(R.integer.COLOR_HOLO_BLUE_LIGHT)));
+            } else if (key.equals(PREF_RECENT_TASK_MASK_COLOR)) {
+                intent.setAction(ACTION_PREF_TASK_MASK_COLOR_CHANGED);
+                intent.putExtra(key, prefs.getInt(key, getResources().getInteger(R.integer.COLOR_WHITE)));
             } else if (key.equals(PREF_KEY_STATUS_ICON_STYLE)) {
                 intent.setAction(ACTION_PREF_STATUSBAR_COLOR_CHANGED);
                 intent.putExtra(EXTRA_SB_ICON_STYLE, Integer.valueOf(
@@ -3464,7 +3485,10 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             } else if (key.equals(PREF_KEY_RECENTS_CLEAR_ALL)) {
                 intent.setAction(ACTION_PREF_RECENTS_CHANGED);
                 intent.putExtra(EXTRA_RECENTS_CLEAR_ALL,
-                        Integer.valueOf(prefs.getString(key, "0")));
+                        Integer.valueOf(prefs.getString(key, "1")));
+            } else if (key.equals(PREF_KEY_RECENTS_CLEAR_ALL_BUTTON_TEXT)) {
+                intent.setAction(ACTION_PREF_RECENTS_CLEAR_ALL_BTN_CHANGED);
+                intent.putExtra(key, prefs.getString(key, getString(R.string.task_clean_btn_default_text)));
             } else if (key.equals(PREF_KEY_RECENTS_CLEAR_ALL_VISIBLE)) {
                 intent.setAction(ACTION_PREF_RECENTS_CHANGED);
                 intent.putExtra(EXTRA_RECENTS_CLEAR_ALL_VISIBLE, prefs.getBoolean(key, false));
@@ -3478,6 +3502,13 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             } else if (key.equals(PREF_KEY_RECENTS_CLEAR_MARGIN_TOP)) {
                 intent.setAction(ACTION_PREF_RECENTS_CHANGED);
                 intent.putExtra(EXTRA_RECENTS_MARGIN_TOP, prefs.getInt(key, 77));
+            } else if (key.equals(PREF_KEY_TASK_CLEAR_BTN_OFFSET)) {
+                intent.setAction(ACTION_PREF_TASK_CLEAR_BTN_OFFSET_CHANGED);
+                intent.putExtra(key, prefs.getInt(key, 30));
+            } else if (key.equals(PREF_RECENT_TASK_ALPHA)) {
+                intent.setAction(ACTION_PREF_RECENTS_ALPHA);
+                intent.putExtra(PREF_RECENT_TASK_ALPHA,
+                        Integer.valueOf(prefs.getInt(key, 100)));
             } else if (key.equals(PREF_KEY_RECENTS_CLEAR_MARGIN_BOTTOM)) {
                 intent.setAction(ACTION_PREF_RECENTS_CHANGED);
                 intent.putExtra(EXTRA_RECENTS_MARGIN_BOTTOM, prefs.getInt(key, 50));

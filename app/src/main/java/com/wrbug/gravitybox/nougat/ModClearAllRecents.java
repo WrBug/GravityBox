@@ -27,25 +27,34 @@ import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
 import android.text.format.Formatter;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 
+import com.wrbug.gravitybox.nougat.util.DensityUtils;
+import com.wrbug.gravitybox.nougat.util.GraphicUtils;
+
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -61,6 +70,8 @@ public class ModClearAllRecents {
     public static final String CLASS_VIEW_ANIMATION = "com.android.systemui.recents.views.ViewAnimation";
     public static final String CLASS_TASK_VIEW_EXIT_CONTEXT = CLASS_VIEW_ANIMATION + ".TaskViewExitContext";
     private static final boolean DEBUG = BuildConfig.DEBUG;
+    private static final String CLASS_TASK_THUMB_NAIL = "com.android.systemui.recents.views.TaskViewThumbnail";
+    private static final String CLASS_RECENTS_VIEW = "com.android.systemui.recents.views.RecentsView";
 
     private static enum SearchBarState {DEFAULT, HIDE_KEEP_SPACE, HIDE_REMOVE_SPACE}
 
@@ -70,9 +81,12 @@ public class ModClearAllRecents {
     private static Drawable mRecentsClearButtonStockIcon;
     private static int mButtonGravity;
     private static int mMarginTopPx;
+    private static int recentTaskAlpha;
+    private static int taskMaskColor;
     private static int mMarginBottomPx;
     private static boolean mNavbarLeftHanded;
     private static ViewGroup mRecentsView;
+    private static TextView mStackActionButton;
     private static SearchBarState mSearchBarState;
     private static SearchBarState mSearchBarStatePrev;
     private static Integer mSearchBarOriginalHeight;
@@ -95,6 +109,9 @@ public class ModClearAllRecents {
     private static int mClearAllRecentsSizePx;
     private static int mRamUsageBarVerticalMargin;
     private static int mRamUsageBarHorizontalMargin;
+    private static int cleanBtnLocation;
+    private static String clearBtnText;
+    private static int clearBtnOffset;
 
     private static void log(String message) {
         XposedBridge.log(TAG + ": " + message);
@@ -106,9 +123,7 @@ public class ModClearAllRecents {
             if (DEBUG) log("Broadcast received: " + intent.toString());
             if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_RECENTS_CHANGED)) {
                 if (intent.hasExtra(GravityBoxSettings.EXTRA_RECENTS_CLEAR_ALL)) {
-                    mButtonGravity = intent.getIntExtra(GravityBoxSettings.EXTRA_RECENTS_CLEAR_ALL, 0);
-                    updateButtonLayout();
-                    updateRamBarLayout();
+                    cleanBtnLocation = intent.getIntExtra(GravityBoxSettings.EXTRA_RECENTS_CLEAR_ALL, 1);
                 }
                 if (intent.hasExtra(GravityBoxSettings.EXTRA_RECENTS_RAMBAR)) {
                     mRamBarGravity = intent.getIntExtra(GravityBoxSettings.EXTRA_RECENTS_RAMBAR, 0);
@@ -142,6 +157,14 @@ public class ModClearAllRecents {
                     mClearVisible = intent.getBooleanExtra(
                             GravityBoxSettings.EXTRA_RECENTS_CLEAR_ALL_VISIBLE, false);
                 }
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_RECENTS_ALPHA)) {
+                recentTaskAlpha = intent.getIntExtra(GravityBoxSettings.PREF_RECENT_TASK_ALPHA, 0);
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_TASK_MASK_COLOR_CHANGED)) {
+                taskMaskColor = intent.getIntExtra(GravityBoxSettings.PREF_RECENT_TASK_MASK_COLOR, Color.WHITE);
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_RECENTS_CLEAR_ALL_BTN_CHANGED)) {
+                clearBtnText = intent.getStringExtra(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_ALL_BUTTON_TEXT);
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_TASK_CLEAR_BTN_OFFSET_CHANGED)) {
+                clearBtnOffset = intent.getIntExtra(GravityBoxSettings.PREF_KEY_TASK_CLEAR_BTN_OFFSET, 30);
             }
             if (intent.getAction().equals(ModHwKeys.ACTION_RECENTS_CLEAR_ALL_SINGLETAP)) {
                 clearAll();
@@ -153,7 +176,7 @@ public class ModClearAllRecents {
         try {
             Class<?> recentActivityClass = XposedHelpers.findClass(CLASS_RECENT_ACTIVITY, classLoader);
             Class<?> systemBarScrimViewsClass = XposedHelpers.findClass(CLASS_SYSTEM_BAR_SCRIM_VIEWS, classLoader);
-            mButtonGravity = Integer.valueOf(prefs.getString(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_ALL, "0"));
+            mButtonGravity = Integer.valueOf(prefs.getString(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_ALL, "1"));
             mRamBarGravity = Integer.valueOf(prefs.getString(GravityBoxSettings.PREF_KEY_RAMBAR, "0"));
             mNavbarLeftHanded = prefs.getBoolean(GravityBoxSettings.PREF_KEY_NAVBAR_OVERRIDE, false) &&
                     prefs.getBoolean(GravityBoxSettings.PREF_KEY_NAVBAR_ENABLE, false) &&
@@ -164,7 +187,9 @@ public class ModClearAllRecents {
             mClearVisible = prefs.getBoolean(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_ALL_VISIBLE, false);
             mSearchBarStatePrev = mSearchBarState;
             mMemInfoReader = new MemInfoReader();
-
+            cleanBtnLocation = Integer.valueOf(prefs.getString(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_ALL, "1"));
+            clearBtnText = prefs.getString(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_ALL_BUTTON_TEXT, "");
+            clearBtnOffset = prefs.getInt(GravityBoxSettings.PREF_KEY_TASK_CLEAR_BTN_OFFSET, 30);
             XposedHelpers.findAndHookMethod(recentActivityClass, "onCreate", Bundle.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
@@ -173,12 +198,15 @@ public class ModClearAllRecents {
                     mHandler = new Handler();
                     mAm = (ActivityManager) mRecentsActivity.getSystemService(Context.ACTIVITY_SERVICE);
                     mRecentsView = (ViewGroup) XposedHelpers.getObjectField(param.thisObject, "mRecentsView");
-
+                    mStackActionButton = (TextView) XposedHelpers.getObjectField(mRecentsView, "mStackActionButton");
+                    mStackActionButton.setGravity(Gravity.CENTER);
                     final Resources res = mRecentsActivity.getResources();
                     mScrimViews = XposedHelpers.getObjectField(param.thisObject, "mScrimViews");
                     mMarginTopPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                             prefs.getInt(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_MARGIN_TOP, 77),
                             res.getDisplayMetrics());
+                    recentTaskAlpha = prefs.getInt(GravityBoxSettings.PREF_RECENT_TASK_ALPHA, 100);
+                    taskMaskColor = prefs.getInt(GravityBoxSettings.PREF_RECENT_TASK_MASK_COLOR, Color.WHITE);
                     mMarginBottomPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                             prefs.getInt(GravityBoxSettings.PREF_KEY_RECENTS_CLEAR_MARGIN_BOTTOM, 50),
                             res.getDisplayMetrics());
@@ -201,23 +229,24 @@ public class ModClearAllRecents {
                     // create and inject new ImageView and set onClick listener to handle action
                     // check for existing first (Zopo)
                     mRecentsClearButton = null;
-                    int resId = res.getIdentifier("funui_clear_task", "id", PACKAGE_NAME);
-                    if (resId != 0) {
-                        View v = vg.findViewById(resId);
-                        if (v instanceof ImageView) {
-                            mRecentsClearButton = (ImageView) v;
-                            mRecentsClearButtonStockIcon = mRecentsClearButton.getDrawable();
-                            if (DEBUG) log("Using existing clear all button");
-                        }
-                    }
+//                    int resId = res.getIdentifier("funui_clear_task", "id", PACKAGE_NAME);
+//                    if (resId != 0) {
+//                        View v = vg.findViewById(resId);
+//                        if (v instanceof ImageView) {
+//                            mRecentsClearButton = (ImageView) v;
+//                            mRecentsClearButtonStockIcon = mRecentsClearButton.getDrawable();
+//                            if (DEBUG) log("Using existing clear all button");
+//                        }
+//                    }
                     if (mRecentsClearButton == null) {
                         mRecentsClearButton = new ImageView(vg.getContext());
                         FrameLayout.LayoutParams lParams = new FrameLayout.LayoutParams(
-                                mClearAllRecentsSizePx, mClearAllRecentsSizePx);
+                                100, 40);
+                        lParams.gravity = Gravity.BOTTOM;
                         mRecentsClearButton.setLayoutParams(lParams);
                         mRecentsClearButton.setScaleType(ScaleType.CENTER);
                         mRecentsClearButton.setClickable(true);
-                        vg.addView(mRecentsClearButton);
+                        mRecentsView.addView(mRecentsClearButton);
                         if (DEBUG) log("clearAllButton ImageView injected");
                     }
                     mRecentsClearButton.setBackground(new RippleDrawable(
@@ -272,7 +301,11 @@ public class ModClearAllRecents {
 
                     IntentFilter intentFilter = new IntentFilter();
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_RECENTS_CHANGED);
+                    intentFilter.addAction(GravityBoxSettings.ACTION_PREF_RECENTS_ALPHA);
                     intentFilter.addAction(ModHwKeys.ACTION_RECENTS_CLEAR_ALL_SINGLETAP);
+                    intentFilter.addAction(GravityBoxSettings.ACTION_PREF_TASK_MASK_COLOR_CHANGED);
+                    intentFilter.addAction(GravityBoxSettings.ACTION_PREF_RECENTS_CLEAR_ALL_BTN_CHANGED);
+                    intentFilter.addAction(GravityBoxSettings.ACTION_PREF_TASK_CLEAR_BTN_OFFSET_CHANGED);
                     mRecentsActivity.registerReceiver(mBroadcastReceiver, intentFilter);
                     if (DEBUG) log("Recents panel view constructed");
                 }
@@ -286,13 +319,69 @@ public class ModClearAllRecents {
                     }
                 }
             });
+
             XposedHelpers.findAndHookMethod(recentActivityClass, "onDestroy", new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
                     ((Activity) param.thisObject).unregisterReceiver(mBroadcastReceiver);
+                    mStackActionButton.setVisibility(View.GONE);
                 }
             });
+            XposedHelpers.findAndHookMethod(CLASS_TASK_THUMB_NAIL, classLoader, "setThumbnail", Bitmap.class, "android.app.ActivityManager$TaskThumbnailInfo", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    log("setThumbnail:" + recentTaskAlpha + ", color:" + Integer.toHexString(taskMaskColor));
+                    Bitmap bitmap = (Bitmap) param.args[0];
+                    if (bitmap != null && recentTaskAlpha != 100) {
+                        Bitmap b = GraphicUtils.getBackGroundBitmap(taskMaskColor, bitmap.getWidth(), bitmap.getHeight());
+                        b = GraphicUtils.getAlplaBitmap(b, 100 - recentTaskAlpha);
+                        param.args[0] = GraphicUtils.mergeBitmap(bitmap, b);
+                    }
+                }
+            });
+            XposedHelpers.findAndHookMethod(CLASS_RECENTS_VIEW, classLoader, "getStackActionButtonBoundsFromStackLayout", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    mStackActionButton.setText(clearBtnText);
+                }
 
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    Rect r = (Rect) param.getResult();
+                    if (DEBUG) log(param.getResult().toString());
+                    int offset = DensityUtils.dip2px(mRecentsActivity, clearBtnOffset);
+                    switch (cleanBtnLocation) {
+                        case 0: {
+                            r.offsetTo(10, r.top + offset);
+                            break;
+                        }
+                        case 1: {
+                            r.offset(0, offset);
+                            break;
+                        }
+                        case 2: {
+                            r.offsetTo(10, mRecentsView.getMeasuredHeight() - mStackActionButton.getMeasuredHeight() - offset);
+                            break;
+                        }
+                        case 3: {
+                            r.offsetTo(r.left, mRecentsView.getMeasuredHeight() - mStackActionButton.getMeasuredHeight() - offset);
+                            break;
+                        }
+                    }
+                    mStackActionButton.layout(r.left, r.top, r.right, r.bottom);
+                }
+            });
+            XposedHelpers.findAndHookMethod(CLASS_RECENTS_VIEW, classLoader, "hideStackActionButton", int.class, boolean.class, "com.android.systemui.recents.misc.ReferenceCountedTrigger", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    mStackActionButton.setVisibility(View.INVISIBLE);
+                }
+
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    mStackActionButton.setVisibility(View.VISIBLE);
+                }
+            });
             XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
@@ -342,7 +431,6 @@ public class ModClearAllRecents {
                     }
                 }
             });
-
             XposedHelpers.findAndHookMethod(recentActivityClass, "onStop", new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
