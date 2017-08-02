@@ -212,6 +212,11 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final String PREF_KEY_STATUS_ICON_STYLE = "pref_status_icon_style";
     public static final String PREF_KEY_STATUSBAR_ICON_COLOR_SECONDARY = "pref_statusbar_icon_color_secondary";
     public static final String PREF_KEY_STATUSBAR_DATA_ACTIVITY_COLOR = "pref_signal_cluster_data_activity_color";
+
+    public static final String PREF_KEY_STATUSBAR_BG_ENABLE = "pref_status_bar_bg_enable";
+    public static final String PREF_KEY_STATUSBAR_BG_COLOR_SECONDARY = "pref_statusbar_bg_color_secondary";
+    public static final String PREF_KEY_STATUSBAR_BG_ALPHA = "pref_status_bar_bg_alpha";
+
     public static final String PREF_KEY_STATUSBAR_DATA_ACTIVITY_COLOR_SECONDARY =
             "pref_signal_cluster_data_activity_color_secondary";
     public static final String PREF_KEY_STATUSBAR_SIGNAL_COLOR_MODE = "pref_statusbar_signal_color_mode";
@@ -564,6 +569,10 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
 
     public static final String ACTION_PREF_STATUSBAR_COLOR_CHANGED = "gravitybox.intent.action.STATUSBAR_COLOR_CHANGED";
     public static final String ACTION_PREF_TASK_MASK_COLOR_CHANGED = "gravitybox.intent.action.TASK_MASK_COLOR_CHANGED";
+
+    public static final String ACTION_PREF_STATUSBAR_BG_COLOR_CHANGED = "gravitybox.intent.action.STATUSBAR_BG_COLOR_CHANGED";
+    public static final String ACTION_PREF_STATUSBAR_BG_ALPHA_CHANGED = "gravitybox.intent.action.TASK_MASK_BG_ALPHA_CHANGED";
+
     public static final String EXTRA_SB_ICON_COLOR_ENABLE = "iconColorEnable";
     public static final String EXTRA_SB_ICON_COLOR = "iconColor";
     public static final String EXTRA_SB_ICON_STYLE = "iconStyle";
@@ -2800,6 +2809,12 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                 intent.putExtra(EXTRA_SB_DATA_ACTIVITY_COLOR,
                         prefs.getInt(PREF_KEY_STATUSBAR_DATA_ACTIVITY_COLOR,
                                 getResources().getInteger(R.integer.signal_cluster_data_activity_icon_color)));
+            } else if (key.equals(PREF_KEY_STATUSBAR_BG_COLOR_SECONDARY)) {
+                intent.setAction(ACTION_PREF_STATUSBAR_BG_COLOR_CHANGED);
+                intent.putExtra(key, prefs.getInt(key, Color.BLACK));
+            } else if (key.equals(PREF_KEY_STATUSBAR_BG_ALPHA)) {
+                intent.setAction(ACTION_PREF_STATUSBAR_BG_ALPHA_CHANGED);
+                intent.putExtra(key, prefs.getInt(key, 100));
             } else if (key.equals(PREF_KEY_STATUSBAR_DATA_ACTIVITY_COLOR_SECONDARY)) {
                 intent.setAction(ACTION_PREF_STATUSBAR_COLOR_CHANGED);
                 intent.putExtra(EXTRA_SB_DATA_ACTIVITY_COLOR_SECONDARY,

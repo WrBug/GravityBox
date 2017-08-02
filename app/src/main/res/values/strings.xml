@@ -2138,4 +2138,8 @@
     <string name="pref_clear_task_btn_setting">Clear Button Setting</string>
     <string name="pref_rambar_setting_title">Rambar setting</string>
     <string name="pref_rexents_task_panel_setting_summary">contain option of recents task rambar and clear button</string>
+    <string name="pref_status_bar_icon_color_title">Icon color</string>
+    <string name="pref_status_bar_bg_alpha_title">Alpha</string>
+    <string name="pref_status_bar_bg_color_title">Background Color</string>
+    <string name="pref_status_bar_bg_color_summary">option of background color</string>
 </resources>

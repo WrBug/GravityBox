@@ -2153,4 +2153,8 @@
     <string name="pref_clear_task_btn_setting">清除按钮调整</string>
     <string name="pref_rambar_setting_title">内存栏调整</string>
     <string name="pref_rexents_task_panel_setting_summary">包含清理按钮调整，内存栏调整</string>
+    <string name="pref_status_bar_icon_color_title">图标颜色</string>
+    <string name="pref_status_bar_bg_alpha_title">背景透明度</string>
+    <string name="pref_status_bar_bg_color_title">背景颜色</string>
+    <string name="pref_status_bar_bg_color_summary">设置状态栏背景颜色</string>
 </resources>

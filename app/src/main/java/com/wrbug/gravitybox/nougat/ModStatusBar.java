@@ -23,6 +23,7 @@ import com.wrbug.gravitybox.nougat.TrafficMeterAbstract.TrafficMeterMode;
 import com.wrbug.gravitybox.nougat.managers.SysUiManagers;
 import com.wrbug.gravitybox.nougat.quicksettings.QsQuickPulldownHandler;
 import com.wrbug.gravitybox.nougat.shortcuts.AShortcut;
+import com.wrbug.gravitybox.nougat.util.LogUtils;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
@@ -41,6 +42,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -152,7 +154,8 @@ public class ModStatusBar {
     private static int mInitialTouchX;
     private static int mInitialTouchY;
     private static int BRIGHTNESS_ON = 255;
-
+    private static int statusBarBgAlpha;
+    private static int statusBarBgColor;
     private static List<BroadcastSubReceiver> mBroadcastSubReceivers = new ArrayList<BroadcastSubReceiver>();
     private static List<StatusBarStateChangedListener> mStateChangeListeners =
             new ArrayList<StatusBarStateChangedListener>();
@@ -243,6 +246,12 @@ public class ModStatusBar {
             } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_POWER_CHANGED) &&
                     intent.hasExtra(GravityBoxSettings.EXTRA_POWER_CAMERA_VP)) {
                 setCameraVibratePattern(intent.getStringExtra(GravityBoxSettings.EXTRA_POWER_CAMERA_VP));
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_STATUSBAR_BG_ALPHA_CHANGED)) {
+                statusBarBgAlpha = intent.getIntExtra(GravityBoxSettings.PREF_KEY_STATUSBAR_BG_ALPHA, 100);
+                prepareStatusbarBackgroundColor();
+            } else if (intent.getAction().equals(GravityBoxSettings.ACTION_PREF_STATUSBAR_BG_COLOR_CHANGED)) {
+                statusBarBgColor = intent.getIntExtra(GravityBoxSettings.PREF_KEY_STATUSBAR_BG_COLOR_SECONDARY, Color.BLACK);
+                prepareStatusbarBackgroundColor();
             }
         }
     };
@@ -578,6 +587,8 @@ public class ModStatusBar {
                     GravityBoxSettings.PREF_KEY_BATTERY_SAVER_INDICATION_DISABLE, false);
             mDisablePeek = prefs.getBoolean(GravityBoxSettings.PREF_KEY_STATUSBAR_DISABLE_PEEK, false);
             mDt2sEnabled = prefs.getBoolean(GravityBoxSettings.PREF_KEY_STATUSBAR_DT2S, false);
+            statusBarBgAlpha = prefs.getInt(GravityBoxSettings.PREF_KEY_STATUSBAR_BG_ALPHA, 100);
+            statusBarBgColor = prefs.getInt(GravityBoxSettings.PREF_KEY_STATUSBAR_BG_COLOR_SECONDARY, Color.BLACK);
             setCameraVibratePattern(prefs.getString(GravityBoxSettings.PREF_KEY_POWER_CAMERA_VP, null));
 
             if (prefs.getBoolean(GravityBoxSettings.PREF_KEY_SIGNAL_CLUSTER_DEM, false)) {
@@ -636,7 +647,7 @@ public class ModStatusBar {
                     prepareProgressBar(ContainerType.STATUSBAR);
                     prepareProgressBar(ContainerType.KEYGUARD);
                     prepareGestureDetector();
-
+                    prepareStatusbarBackgroundColor();
                     IntentFilter intentFilter = new IntentFilter();
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_CLOCK_CHANGED);
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_STATUSBAR_CHANGED);
@@ -656,6 +667,8 @@ public class ModStatusBar {
                     intentFilter.addAction(GravityBoxSettings.ACTION_NOTIF_BACKGROUND_CHANGED);
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_SIGNAL_CLUSTER_CHANGED);
                     intentFilter.addAction(GravityBoxSettings.ACTION_BATTERY_SAVER_CHANGED);
+                    intentFilter.addAction(GravityBoxSettings.ACTION_PREF_STATUSBAR_BG_COLOR_CHANGED);
+                    intentFilter.addAction(GravityBoxSettings.ACTION_PREF_STATUSBAR_BG_ALPHA_CHANGED);
                     intentFilter.addAction(Intent.ACTION_SCREEN_ON);
                     intentFilter.addAction(Intent.ACTION_SCREEN_OFF);
                     intentFilter.addAction(GravityBoxSettings.ACTION_PREF_POWER_CHANGED);
@@ -1079,6 +1092,27 @@ public class ModStatusBar {
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
+    }
+
+    private static void prepareStatusbarBackgroundColor() {
+        if (!mPrefs.getBoolean(GravityBoxSettings.PREF_KEY_STATUSBAR_BG_ENABLE, false)) {
+            return;
+        }
+        View view = (View) XposedHelpers.getObjectField(mPhoneStatusBar, "mStatusBarWindow");
+        View bar = view.findViewById(view.getResources().getIdentifier("quick_settings_container", "id", "com.android.systemui"));
+        if (DEBUG) {
+            log("alpha:" + statusBarBgAlpha + ", color:" + Integer.toHexString(statusBarBgColor));
+        }
+        bar.setAlpha(1 - statusBarBgAlpha / 100.0f);
+        bar.setBackgroundColor(statusBarBgColor);
+//        ViewGroup viewGroup = (ViewGroup) view.findViewById(view.getResources().getIdentifier("notification_stack_scroller", "id", "com.android.systemui"));
+//        View v = viewGroup.getChildAt(0);
+//        XposedHelpers.callMethod(v, "setBackgroundTintColor", Color.GREEN);
+//        for (int i = 1; i < viewGroup.getChildCount(); i++) {
+//            View view1 = viewGroup.getChildAt(i);
+//            log(view1.toString() + ";" + view1.getId());
+//            view1.setAlpha(0.5f);
+//        }
     }
 
     private static void setClockPosition(boolean center) {

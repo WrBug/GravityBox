@@ -16,6 +16,7 @@ GravityBox[NG] is base on [GravityBox[MM]][1] , the current version is beta and 
 - add Hide navigation bar
 - add Task Clear Button
 - add Recents Task Detail Masking
+- add option of statusbar background color and alpha 
 
 ### v1.0.2-beta (2017-7-30)
 
