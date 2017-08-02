@@ -160,6 +160,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final int VOL_KEY_CURSOR_CONTROL_ON = 1;
     public static final int VOL_KEY_CURSOR_CONTROL_ON_REVERSE = 2;
 
+    public static final String PREF_KEY_CLEAR_TASK_ENABLE = "pref_clear_task_switch";
     public static final String PREF_KEY_RECENTS_CLEAR_ALL = "pref_recents_clear_all2";
     public static final String PREF_KEY_RECENTS_CLEAR_ALL_BUTTON_TEXT = "pref_task_clean_btn";
     public static final String PREF_KEY_RECENTS_CLEAR_ALL_VISIBLE = "pref_recents_clear_all_visible";
@@ -168,6 +169,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final String PREF_KEY_RECENTS_CLEAR_MARGIN_TOP = "pref_recent_clear_margin_top";
     public static final String PREF_KEY_TASK_CLEAR_BTN_OFFSET = "pref_task_clear_btn_delta";
 
+    public static final String PREF_RECENT_TASK_MASK_ENABLE = "pref_task_mask_enable";
     public static final String PREF_RECENT_TASK_ALPHA = "pref_recent_task_alpha";
     public static final String PREF_KEY_RECENTS_CLEAR_MARGIN_BOTTOM = "pref_recent_clear_margin_bottom";
     public static final String PREF_KEY_RECENTS_SEARCH_BAR = "pref_recents_searchbar";
@@ -1225,7 +1227,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
         Log.d("GravityBox", "result received: resultCode=" + resultCode);
         if (resultCode == SystemPropertyProvider.RESULT_SYSTEM_PROPERTIES) {
             sSystemProperties = new SystemProperties(resultData);
-            getFragmentManager().beginTransaction().replace(android.R.id.content, new PrefsFragment()).commit();
+            getFragmentManager().beginTransaction().replace(android.R.id.content, new PrefsFragment()).commitAllowingStateLoss();
         } else {
             finish();
         }

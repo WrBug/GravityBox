@@ -815,7 +815,7 @@
     <string name="pref_vol_force_music_control_summary">Ak povolené, tlačidlá hlasitosti budú ovládať úroveň hlasitosti médií namiesto úrovne hlasitosti zvonenia</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Panel aktívnych úloh</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Panel aktívnych úloh</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Iné nastavenia</string>

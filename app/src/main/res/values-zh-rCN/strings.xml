@@ -844,7 +844,7 @@
     <string name="pref_vol_force_music_control_summary">启用后音量键控制媒体音量而不是铃声音量</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">最近使用面板</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">最近使用面板蒙版</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">其它设置</string>
@@ -2149,4 +2149,8 @@
     <string name="pref_task_clean_btn_text">清除按钮文字</string>
     <string name="task_clean_btn_default_text">全部清除</string>
     <string name="pref_task_clear_btn_offset">清除按钮偏移量</string>
+    <string name="pref_recents_task_panel_setting_title">最近使用面板调整</string>
+    <string name="pref_clear_task_btn_setting">清除按钮调整</string>
+    <string name="pref_rambar_setting_title">内存栏调整</string>
+    <string name="pref_rexents_task_panel_setting_summary">包含清理按钮调整，内存栏调整</string>
 </resources>

@@ -835,7 +835,7 @@
     <string name="pref_vol_force_music_control_summary">Când este activat, tastele de volum controlează volumul media în loc de volumul soneriei</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Panou recente</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Panou recente</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Alte setări</string>

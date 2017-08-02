@@ -842,7 +842,7 @@
     <string name="pref_vol_force_music_control_summary">Если включено, кнопки громкости управляют уровнем звука музыки вместо уровня громкости вызова</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Панель недавних</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Панель недавних</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Другие настройки</string>

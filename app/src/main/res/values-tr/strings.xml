@@ -523,7 +523,7 @@
     <string name="qs_tile_quickapp_2">Hızlı Uygulama 2</string>
     <string name="pref_vol_force_music_control_title">Medya sesini kontrole zorla</string>
     <string name="pref_vol_force_music_control_summary">Etkinleştirildiğinde, ses tuşları zil sesi ve medya seslerini ayrı olarak ayarlar</string>
-    <string name="pref_cat_misc_recents_panel_title">Son uygulamalar paneli</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Son uygulamalar paneli</string>
     <string name="pref_cat_misc_other_title">Diğer ayarlar</string>
     <string name="pref_ime_fullscreen_disable_title">Tam ekran klavyeyi kapat</string>
     <string name="pref_torch_auto_off_title">Feneri otomatik kapat</string>

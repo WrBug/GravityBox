@@ -820,7 +820,7 @@
     <string name="pref_vol_force_music_control_summary">Όταν είναι ενεργό, τα πλήκτρα έντασης ελέγχουν την ένταση πολυμέσων αντί για το κουδούνισμα</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Πίνακας πρόσφατων</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Πίνακας πρόσφατων</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Άλλες ρυθμίσεις</string>

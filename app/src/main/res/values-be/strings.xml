@@ -837,7 +837,7 @@
     <string name="pref_vol_force_music_control_summary">Калі ўключана, кнопкі гучнасці кіруюць узроўнем гуку музыкі замест узроўню гучнасці выкліку</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Панэль нядаўніх</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Панэль нядаўніх</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Іншыя налады</string>

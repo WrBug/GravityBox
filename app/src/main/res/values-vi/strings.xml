@@ -839,7 +839,7 @@
     <string name="pref_vol_force_music_control_summary">Khi bật, phím âm lượng điều chỉnh âm lượng đa phương tiện thay vì âm lượng chuông</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Bảng hiện tại</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Bảng hiện tại</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Cài đặt khác</string>

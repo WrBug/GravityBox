@@ -28,6 +28,8 @@ import android.media.AudioManager;
 import android.view.View;
 import android.widget.ImageButton;
 
+import com.wrbug.gravitybox.nougat.util.LogUtils;
+
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
@@ -93,7 +95,6 @@ public class ModVolumePanel {
             mVolumeAdjustVibrateMuted = prefs.getBoolean(GravityBoxSettings.PREF_KEY_VOLUME_ADJUST_VIBRATE_MUTE, false);
             mAutoExpand = prefs.getBoolean(GravityBoxSettings.PREF_KEY_VOLUME_PANEL_AUTOEXPAND, false);
             mVolumesLinked = prefs.getBoolean(GravityBoxSettings.PREF_KEY_LINK_VOLUMES, true);
-
             XposedBridge.hookAllConstructors(classVolumePanel, new XC_MethodHook() {
 
                 @Override
@@ -171,19 +172,29 @@ public class ModVolumePanel {
                             }
                         });
             }
-            XposedHelpers.findAndHookMethod(classVolumePanel, "updateVolumeRowSliderH",
-                    CLASS_VOLUME_ROW, boolean.class, int.class, new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
-                            if (!mVolumesLinked && XposedHelpers.getAdditionalInstanceField(
-                                    param.args[0], "gbNotifSlider") != null) {
-                                View slider = (View) XposedHelpers.getObjectField(param.args[0], "slider");
-                                slider.setEnabled(isRingerSliderEnabled());
-                                View icon = (View) XposedHelpers.getObjectField(param.args[0], "icon");
-                                icon.setEnabled(slider.isEnabled());
-                            }
-                        }
-                    });
+            String[] s = LogUtils.showDeclaredMethod(classVolumePanel).split("\n");
+            for (String s1 : s) {
+                log(s1);
+            }
+            XC_MethodHook hook = new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    if (!mVolumesLinked && XposedHelpers.getAdditionalInstanceField(
+                            param.args[0], "gbNotifSlider") != null) {
+                        View slider = (View) XposedHelpers.getObjectField(param.args[0], "slider");
+                        slider.setEnabled(isRingerSliderEnabled());
+                        View icon = (View) XposedHelpers.getObjectField(param.args[0], "icon");
+                        icon.setEnabled(slider.isEnabled());
+                    }
+                }
+            };
+            Object[] parameter;
+            if (XposedHelpers.findMethodExactIfExists(classVolumePanel, "updateVolumeRowSliderH", CLASS_VOLUME_ROW, boolean.class, int.class) != null) {
+                parameter = new Object[]{CLASS_VOLUME_ROW, boolean.class, int.class, hook};
+            } else {
+                parameter = new Object[]{CLASS_VOLUME_ROW, boolean.class, int.class, boolean.class, hook};
+            }
+            XposedHelpers.findAndHookMethod(classVolumePanel, "updateVolumeRowSliderH", parameter);
         } catch (Throwable t) {
             XposedBridge.log(t);
         }

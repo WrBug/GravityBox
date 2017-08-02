@@ -327,61 +327,8 @@ public class ModClearAllRecents {
                     mStackActionButton.setVisibility(View.GONE);
                 }
             });
-            XposedHelpers.findAndHookMethod(CLASS_TASK_THUMB_NAIL, classLoader, "setThumbnail", Bitmap.class, "android.app.ActivityManager$TaskThumbnailInfo", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    log("setThumbnail:" + recentTaskAlpha + ", color:" + Integer.toHexString(taskMaskColor));
-                    Bitmap bitmap = (Bitmap) param.args[0];
-                    if (bitmap != null && recentTaskAlpha != 100) {
-                        Bitmap b = GraphicUtils.getBackGroundBitmap(taskMaskColor, bitmap.getWidth(), bitmap.getHeight());
-                        b = GraphicUtils.getAlplaBitmap(b, 100 - recentTaskAlpha);
-                        param.args[0] = GraphicUtils.mergeBitmap(bitmap, b);
-                    }
-                }
-            });
-            XposedHelpers.findAndHookMethod(CLASS_RECENTS_VIEW, classLoader, "getStackActionButtonBoundsFromStackLayout", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    mStackActionButton.setText(clearBtnText);
-                }
-
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    Rect r = (Rect) param.getResult();
-                    if (DEBUG) log(param.getResult().toString());
-                    int offset = DensityUtils.dip2px(mRecentsActivity, clearBtnOffset);
-                    switch (cleanBtnLocation) {
-                        case 0: {
-                            r.offsetTo(10, r.top + offset);
-                            break;
-                        }
-                        case 1: {
-                            r.offset(0, offset);
-                            break;
-                        }
-                        case 2: {
-                            r.offsetTo(10, mRecentsView.getMeasuredHeight() - mStackActionButton.getMeasuredHeight() - offset);
-                            break;
-                        }
-                        case 3: {
-                            r.offsetTo(r.left, mRecentsView.getMeasuredHeight() - mStackActionButton.getMeasuredHeight() - offset);
-                            break;
-                        }
-                    }
-                    mStackActionButton.layout(r.left, r.top, r.right, r.bottom);
-                }
-            });
-            XposedHelpers.findAndHookMethod(CLASS_RECENTS_VIEW, classLoader, "hideStackActionButton", int.class, boolean.class, "com.android.systemui.recents.misc.ReferenceCountedTrigger", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    mStackActionButton.setVisibility(View.INVISIBLE);
-                }
-
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    mStackActionButton.setVisibility(View.VISIBLE);
-                }
-            });
+            initRecentsTaskMask(prefs, classLoader);
+            initClearTaskBtn(prefs, classLoader);
             XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
@@ -469,6 +416,72 @@ public class ModClearAllRecents {
         } catch (Throwable t) {
             XposedBridge.log(t);
         }
+    }
+
+    private static void initRecentsTaskMask(XSharedPreferences prefs, ClassLoader classLoader) {
+        if (!prefs.getBoolean(GravityBoxSettings.PREF_RECENT_TASK_MASK_ENABLE, false)) {
+            return;
+        }
+        XposedHelpers.findAndHookMethod(CLASS_TASK_THUMB_NAIL, classLoader, "setThumbnail", Bitmap.class, "android.app.ActivityManager$TaskThumbnailInfo", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Bitmap bitmap = (Bitmap) param.args[0];
+                if (bitmap != null && recentTaskAlpha != 100) {
+                    Bitmap b = GraphicUtils.getBackGroundBitmap(taskMaskColor, bitmap.getWidth(), bitmap.getHeight());
+                    b = GraphicUtils.getAlplaBitmap(b, 100 - recentTaskAlpha);
+                    param.args[0] = GraphicUtils.mergeBitmap(bitmap, b);
+                }
+            }
+        });
+    }
+
+    private static void initClearTaskBtn(XSharedPreferences prefs, ClassLoader classLoader) {
+        if (!prefs.getBoolean(GravityBoxSettings.PREF_KEY_CLEAR_TASK_ENABLE, false)) {
+            return;
+        }
+        XposedHelpers.findAndHookMethod(CLASS_RECENTS_VIEW, classLoader, "getStackActionButtonBoundsFromStackLayout", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                mStackActionButton.setText(clearBtnText);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Rect r = (Rect) param.getResult();
+                if (DEBUG) log(param.getResult().toString());
+                int offset = DensityUtils.dip2px(mRecentsActivity, clearBtnOffset);
+                switch (cleanBtnLocation) {
+                    case 0: {
+                        r.offsetTo(10, r.top + offset);
+                        break;
+                    }
+                    case 1: {
+                        r.offset(0, offset);
+                        break;
+                    }
+                    case 2: {
+                        r.offsetTo(10, mRecentsView.getMeasuredHeight() - mStackActionButton.getMeasuredHeight() - offset);
+                        break;
+                    }
+                    case 3: {
+                        r.offsetTo(r.left, mRecentsView.getMeasuredHeight() - mStackActionButton.getMeasuredHeight() - offset);
+                        break;
+                    }
+                }
+                mStackActionButton.layout(r.left, r.top, r.right, r.bottom);
+            }
+        });
+        XposedHelpers.findAndHookMethod(CLASS_RECENTS_VIEW, classLoader, "hideStackActionButton", int.class, boolean.class, "com.android.systemui.recents.misc.ReferenceCountedTrigger", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                mStackActionButton.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                mStackActionButton.setVisibility(View.VISIBLE);
+            }
+        });
     }
 
     private static void performExitAnimation(final View view) {

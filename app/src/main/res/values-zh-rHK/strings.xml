@@ -822,7 +822,7 @@
     <string name="pref_vol_force_music_control_summary">當啟用時，音量鍵將會控制媒體音量而不是鈴聲音量</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">多工面板</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">多工面板</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">其他設定</string>

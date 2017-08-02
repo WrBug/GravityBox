@@ -659,7 +659,7 @@
     <string name="pref_vol_force_music_control_title">강제 미디어 볼륨 컨트롤</string>
     <string name="pref_vol_force_music_control_summary">이 기능을 사용하면 기존에 볼륨 키를 누르면 벨소리 음량을 조절하는 것 대신 미디어 음량을 조절합니다.</string>
 
-    <string name="pref_cat_misc_recents_panel_title">최근 사용한 앱 패널</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">최근 사용한 앱 패널</string>
 
     <string name="pref_cat_misc_other_title">기타 설정</string>
 

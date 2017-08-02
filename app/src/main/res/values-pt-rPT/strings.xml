@@ -813,7 +813,7 @@
     <string name="pref_vol_force_music_control_summary">Quando ativado, as teclas de volume controlam o volume de média em vez do volume de toque de chamada</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Painel de aplicações recentes</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Painel de aplicações recentes</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Outras definições</string>

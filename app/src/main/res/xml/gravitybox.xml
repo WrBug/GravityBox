@@ -2511,18 +2511,19 @@
         -->
 
     </PreferenceScreen>
-
     <PreferenceScreen
-        android:key="pref_cat_misc"
-        android:summary="@string/pref_cat_misc_summary"
-        android:title="@string/pref_cat_misc_title">
-
+        android:summary="@string/pref_rexents_task_panel_setting_summary"
+        android:title="@string/pref_recents_task_panel_setting_title">
         <PreferenceCategory
-            android:key="pref_cat_misc_recents_panel"
-            android:title="@string/pref_cat_misc_recents_panel_title">
-
+            android:title="@string/pref_clear_task_btn_setting">
+            <SwitchPreference
+                android:defaultValue="false"
+                android:key="pref_clear_task_switch"
+                android:summary="@string/pref_signal_cluster_hplus_summary"
+                android:title="@string/pref_masterswitch_title"/>
             <ListPreference
                 android:defaultValue="1"
+                android:dependency="pref_clear_task_switch"
                 android:entries="@array/recents_clear_entries"
                 android:entryValues="@array/recents_clear_values"
                 android:key="pref_recents_clear_all2"
@@ -2530,6 +2531,7 @@
 
             <EditTextPreference
                 android:defaultValue="@string/task_clean_btn_default_text"
+                android:dependency="pref_clear_task_switch"
                 android:key="pref_task_clean_btn"
                 android:title="@string/pref_task_clean_btn_text"/>
             <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
@@ -2539,23 +2541,44 @@
                 monitorBoxEnabled="true"
                 monitorBoxUnit="dp"
                 android:defaultValue="30"
+                android:dependency="pref_clear_task_switch"
                 android:key="pref_task_clear_btn_delta"
                 android:title="@string/pref_task_clear_btn_offset"/>
-            <!--<CheckBoxPreference-->
-            <!--android:defaultValue="false"-->
-            <!--android:key="pref_recents_clear_all_visible"-->
-            <!--android:title="@string/pref_recents_clear_all_visible_title"/>-->
-
-            <!--<CheckBoxPreference-->
-            <!--android:defaultValue="false"-->
-            <!--android:key="pref_recents_clear_all_icon_alt"-->
-            <!--android:title="@string/pref_navbar_custom_key_icon_title"/>-->
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_misc_recents_panel_mask_title">
+            <SwitchPreference
+                android:key="pref_task_mask_enable"
+                android:summary="@string/pref_signal_cluster_hplus_summary"
+                android:title="@string/pref_masterswitch_title"/>
+            <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
+                interval="1"
+                maximum="100"
+                minimum="0"
+                monitorBoxEnabled="true"
+                monitorBoxUnit="%"
+                android:defaultValue="100"
+                android:dependency="pref_task_mask_enable"
+                android:key="pref_recent_task_alpha"
+                android:title="@string/pref_recent_task_detail_alpha"/>
 
             <net.margaritov.preference.colorpicker.ColorPickerPreference
                 android:defaultValue="@integer/COLOR_WHITE"
+                android:dependency="pref_task_mask_enable"
                 android:key="pref_recent_task_mask_color"
                 android:summary="@string/pref_recent_task_mask_color_summary"
                 android:title="@string/pref_recent_task_mask_color"/>
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:key="pref_cat_misc_recents_panel"
+            android:title="@string/pref_rambar_setting_title">
+
+            <ListPreference
+                android:defaultValue="0"
+                android:entries="@array/rambar_entries"
+                android:entryValues="@array/rambar_values"
+                android:key="pref_rambar"
+                android:title="@string/pref_rambar_title"/>
             <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
                 interval="1"
                 maximum="100"
@@ -2575,21 +2598,8 @@
                 android:defaultValue="50"
                 android:key="pref_recent_clear_margin_bottom"
                 android:title="@string/pref_recent_clear_margin_bottom_title"/>
-            <ListPreference
-                android:defaultValue="0"
-                android:entries="@array/rambar_entries"
-                android:entryValues="@array/rambar_values"
-                android:key="pref_rambar"
-                android:title="@string/pref_rambar_title"/>
-            <com.wrbug.gravitybox.nougat.preference.SeekBarPreference
-                interval="1"
-                maximum="100"
-                minimum="0"
-                monitorBoxEnabled="true"
-                monitorBoxUnit="%"
-                android:defaultValue="100"
-                android:key="pref_recent_task_alpha"
-                android:title="@string/pref_recent_task_detail_alpha"/>
+
+
             <ListPreference
                 android:defaultValue="DEFAULT"
                 android:entries="@array/recents_searchbar_entries"
@@ -2598,6 +2608,12 @@
                 android:title="@string/pref_recents_searchbar_title"/>
 
         </PreferenceCategory>
+    </PreferenceScreen>
+    <PreferenceScreen
+        android:key="pref_cat_misc"
+        android:summary="@string/pref_cat_misc_summary"
+        android:title="@string/pref_cat_misc_title">
+
 
         <PreferenceCategory
             android:key="pref_cat_headset_actions"

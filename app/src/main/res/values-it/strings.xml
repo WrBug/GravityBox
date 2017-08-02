@@ -830,7 +830,7 @@
     <string name="pref_vol_force_music_control_summary">Quando abilitato, i tasti del volume controlleranno il volume della musica piuttosto che il volume della suoneria</string>
 
     <!-- Misc tweaks: category for recents panel related tweaks -->
-    <string name="pref_cat_misc_recents_panel_title">Schermata applicazioni recenti</string>
+    <string name="pref_cat_misc_recents_panel_mask_title">Schermata applicazioni recenti</string>
 
     <!-- Misc tweaks: category for other settings -->
     <string name="pref_cat_misc_other_title">Altre impostazioni</string>

@@ -523,7 +523,7 @@
 <string name="qs_tile_quickapp_2">دسترسی سریع به برنامه‌های ۲</string>
 <string name="pref_vol_force_music_control_title">کنترل اجباری حجم صدای رسانه</string>
 <string name="pref_vol_force_music_control_summary">هنگام فعال بودن، کلید حجم صدا بجای حجم صدای زنگ تماس حجم صدای رسانه را کنترل میکند</string>
-<string name="pref_cat_misc_recents_panel_title">پنل موارد اخیر</string>
+<string name="pref_cat_misc_recents_panel_mask_title">پنل موارد اخیر</string>
 <string name="pref_cat_misc_other_title">سایر تنظیمات</string>
 <string name="pref_ime_fullscreen_disable_title">غیرفعالسازی صفحه کلید تمام‌صفحه</string>
 <string name="pref_torch_auto_off_title">خاموش کردن خودکار چراغ قوه</string>
