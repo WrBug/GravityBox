@@ -102,11 +102,11 @@ public class ModLowBatteryWarning {
                     Object batteryLight = XposedHelpers.getObjectField(param.thisObject, "mBatteryLight");
                     Object o = XposedHelpers.getSurroundingThis(param.thisObject);
                     Object batteryProps = XposedHelpers.getObjectField(o, "mBatteryProps");
-                    if (DEBUG) {
-                        log("BatteryService LED: updateLightsLocked ENTERED");
-                        // for debugging purposes - simulate low battery
-                        XposedHelpers.setIntField(batteryProps, "batteryLevel", 10);
-                    }
+//                    if (DEBUG) {
+//                        log("BatteryService LED: updateLightsLocked ENTERED");
+//                        // for debugging purposes - simulate low battery
+//                        XposedHelpers.setIntField(batteryProps, "batteryLevel", 10);
+//                    }
 
                     final int status = XposedHelpers.getIntField(batteryProps, "batteryStatus");
                     if (status == BatteryManager.BATTERY_STATUS_CHARGING) {

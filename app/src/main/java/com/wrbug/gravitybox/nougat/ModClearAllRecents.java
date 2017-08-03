@@ -52,6 +52,7 @@ import android.widget.TextView;
 
 import com.wrbug.gravitybox.nougat.util.DensityUtils;
 import com.wrbug.gravitybox.nougat.util.GraphicUtils;
+import com.wrbug.gravitybox.nougat.util.LogUtils;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XC_MethodReplacement;
@@ -62,23 +63,18 @@ import de.robv.android.xposed.XposedHelpers;
 public class ModClearAllRecents {
     private static final String TAG = "GB:ModClearAllRecents";
     public static final String PACKAGE_NAME = "com.android.systemui";
-    public static final String CLASS_RECENT_VIEW = "com.android.systemui.recents.views.RecentsView";
     public static final String CLASS_RECENT_ACTIVITY = "com.android.systemui.recents.RecentsActivity";
     private static final String CLASS_SYSTEM_BAR_SCRIM_VIEWS = "com.android.systemui.recents.views.SystemBarScrimViews";
     public static final String CLASS_SWIPE_HELPER = "com.android.systemui.SwipeHelper";
     public static final String CLASS_TASK_STACK_VIEW = "com.android.systemui.recents.views.TaskStackView";
-    public static final String CLASS_VIEW_ANIMATION = "com.android.systemui.recents.views.ViewAnimation";
-    public static final String CLASS_TASK_VIEW_EXIT_CONTEXT = CLASS_VIEW_ANIMATION + ".TaskViewExitContext";
     private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String CLASS_TASK_THUMB_NAIL = "com.android.systemui.recents.views.TaskViewThumbnail";
     private static final String CLASS_RECENTS_VIEW = "com.android.systemui.recents.views.RecentsView";
 
-    private static enum SearchBarState {DEFAULT, HIDE_KEEP_SPACE, HIDE_REMOVE_SPACE}
+    private enum SearchBarState {DEFAULT, HIDE_KEEP_SPACE, HIDE_REMOVE_SPACE}
 
     private static Object mScrimViews;
     private static boolean hasStackTasks;
-    private static ImageView mRecentsClearButton;
-    private static Drawable mRecentsClearButtonStockIcon;
     private static int mButtonGravity;
     private static int mMarginTopPx;
     private static int recentTaskAlpha;
@@ -133,14 +129,12 @@ public class ModClearAllRecents {
                     mMarginTopPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                             intent.getIntExtra(GravityBoxSettings.EXTRA_RECENTS_MARGIN_TOP, 77),
                             context.getResources().getDisplayMetrics());
-                    updateButtonLayout();
                     updateRamBarLayout();
                 }
                 if (intent.hasExtra(GravityBoxSettings.EXTRA_RECENTS_MARGIN_BOTTOM)) {
                     mMarginBottomPx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                             intent.getIntExtra(GravityBoxSettings.EXTRA_RECENTS_MARGIN_BOTTOM, 50),
                             context.getResources().getDisplayMetrics());
-                    updateButtonLayout();
                     updateRamBarLayout();
                 }
                 if (intent.hasExtra(GravityBoxSettings.EXTRA_RECENTS_SEARCH_BAR)) {
@@ -151,7 +145,6 @@ public class ModClearAllRecents {
                 if (intent.hasExtra(GravityBoxSettings.EXTRA_RECENTS_CLEAR_ALL_ICON_ALT)) {
                     mClearAllUseAltIcon = intent.getBooleanExtra(
                             GravityBoxSettings.EXTRA_RECENTS_CLEAR_ALL_ICON_ALT, false);
-                    updateButtonImage();
                 }
                 if (intent.hasExtra(GravityBoxSettings.EXTRA_RECENTS_CLEAR_ALL_VISIBLE)) {
                     mClearVisible = intent.getBooleanExtra(
@@ -199,6 +192,9 @@ public class ModClearAllRecents {
                     mAm = (ActivityManager) mRecentsActivity.getSystemService(Context.ACTIVITY_SERVICE);
                     mRecentsView = (ViewGroup) XposedHelpers.getObjectField(param.thisObject, "mRecentsView");
                     mStackActionButton = (TextView) XposedHelpers.getObjectField(mRecentsView, "mStackActionButton");
+                    if (mStackActionButton == null) {
+                        mStackActionButton = new TextView(mRecentsActivity);
+                    }
                     mStackActionButton.setGravity(Gravity.CENTER);
                     final Resources res = mRecentsActivity.getResources();
                     mScrimViews = XposedHelpers.getObjectField(param.thisObject, "mScrimViews");
@@ -225,61 +221,6 @@ public class ModClearAllRecents {
 
                     FrameLayout vg = (FrameLayout) mRecentsActivity.getWindow().getDecorView()
                             .findViewById(android.R.id.content);
-
-                    // create and inject new ImageView and set onClick listener to handle action
-                    // check for existing first (Zopo)
-                    mRecentsClearButton = null;
-//                    int resId = res.getIdentifier("funui_clear_task", "id", PACKAGE_NAME);
-//                    if (resId != 0) {
-//                        View v = vg.findViewById(resId);
-//                        if (v instanceof ImageView) {
-//                            mRecentsClearButton = (ImageView) v;
-//                            mRecentsClearButtonStockIcon = mRecentsClearButton.getDrawable();
-//                            if (DEBUG) log("Using existing clear all button");
-//                        }
-//                    }
-                    if (mRecentsClearButton == null) {
-                        mRecentsClearButton = new ImageView(vg.getContext());
-                        FrameLayout.LayoutParams lParams = new FrameLayout.LayoutParams(
-                                100, 40);
-                        lParams.gravity = Gravity.BOTTOM;
-                        mRecentsClearButton.setLayoutParams(lParams);
-                        mRecentsClearButton.setScaleType(ScaleType.CENTER);
-                        mRecentsClearButton.setClickable(true);
-                        mRecentsView.addView(mRecentsClearButton);
-                        if (DEBUG) log("clearAllButton ImageView injected");
-                    }
-                    mRecentsClearButton.setBackground(new RippleDrawable(
-                            new ColorStateList(new int[][]{new int[]{}},
-                                    new int[]{0xffffffff}), null, null));
-                    mRecentsClearButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mHandler.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    clearAll();
-                                }
-                            }, 100);
-                        }
-                    });
-                    mRecentsClearButton.setOnLongClickListener(new View.OnLongClickListener() {
-                        @Override
-                        public boolean onLongClick(View v) {
-                            try {
-                                Intent intent = new Intent(Settings.ACTION_APPLICATION_SETTINGS);
-                                v.getContext().startActivity(intent);
-                                return true;
-                            } catch (Throwable t) {
-                                log("Error launching appplication settings: " + t.getMessage());
-                                return false;
-                            }
-                        }
-                    });
-                    mRecentsClearButton.setVisibility(View.GONE);
-                    updateButtonImage();
-                    updateButtonLayout();
-
                     // create and inject RAM bar
                     mRamUsageBar = new LinearColorBar(vg.getContext(), null);
                     mRamUsageBar.setOrientation(LinearLayout.HORIZONTAL);
@@ -336,11 +277,13 @@ public class ModClearAllRecents {
 
 //                    Object config = XposedHelpers.getObjectField(param.thisObject, "mConfig");
 //                    boolean hasTasks = !XposedHelpers.getBooleanField(config, "launchedWithNoRecentTasks");
-                    if (mRecentsClearButton != null) {
-                        boolean visible = mButtonGravity != 0 && mButtonGravity != 1 && hasStackTasks;
-                        mRecentsClearButton.setVisibility(visible ? View.VISIBLE : View.GONE);
-                    }
+//                    if (mRecentsClearButton != null) {
+//                        boolean visible = mButtonGravity != 0 && mButtonGravity != 1 && hasStackTasks;
+//                        mRecentsClearButton.setVisibility(visible ? View.VISIBLE : View.GONE);
+//                    }
+                    log("resume:" + mRamUsageBar);
                     if (mRamUsageBar != null) {
+                        log("resume:" + mRamBarGravity);
                         if (mRamBarGravity != 0) {
                             mRamUsageBar.setVisibility(View.VISIBLE);
                             updateRamBarLayout();
@@ -349,9 +292,9 @@ public class ModClearAllRecents {
                             mRamUsageBar.setVisibility(View.GONE);
                         }
                     }
-                    if (mButtonGravity == GravityBoxSettings.RECENT_CLEAR_NAVIGATION_BAR && hasStackTasks) {
-                        setRecentsClearAll(true, (Context) param.thisObject);
-                    }
+//                    if (mButtonGravity == GravityBoxSettings.RECENT_CLEAR_NAVIGATION_BAR && hasStackTasks) {
+//                        setRecentsClearAll(true, (Context) param.thisObject);
+//                    }
 //                    if (mSearchBarState != SearchBarState.DEFAULT) {
 //                        XposedHelpers.callMethod(mRecentsView, "setSearchBarVisibility", View.GONE);
 //                        if (mSearchBarState == SearchBarState.HIDE_REMOVE_SPACE) {
@@ -404,10 +347,6 @@ public class ModClearAllRecents {
 //                    CLASS_TASK_VIEW_EXIT_CONTEXT, new XC_MethodHook() {
 //                        @Override
 //                        protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
-//                            if (mRecentsClearButton != null &&
-//                                    mRecentsClearButton.getVisibility() == View.VISIBLE) {
-//                                performExitAnimation(mRecentsClearButton);
-//                            }
 //                            if (mRamUsageBar != null && mRamUsageBar.getVisibility() == View.VISIBLE) {
 //                                performExitAnimation(mRamUsageBar);
 //                            }
@@ -521,53 +460,6 @@ public class ModClearAllRecents {
         ModPieControls.setRecentAlt(show);
     }
 
-    @SuppressWarnings("deprecation")
-    private static void updateButtonImage() {
-        if (mRecentsClearButton == null) return;
-        try {
-            if (mRecentsClearButtonStockIcon != null) {
-                Drawable d = mClearAllUseAltIcon ? mGbContext.getResources().getDrawable(
-                        R.drawable.ic_recent_clear) : mRecentsClearButtonStockIcon;
-                mRecentsClearButton.setImageDrawable(d);
-            } else {
-                int icResId = mClearAllUseAltIcon ? R.drawable.ic_recent_clear : R.drawable.ic_dismiss_all;
-                mRecentsClearButton.setImageDrawable(mGbContext.getResources().getDrawable(icResId));
-            }
-        } catch (Throwable t) {
-            XposedBridge.log(t);
-        }
-    }
-
-    private static void updateButtonLayout() {
-        if (mRecentsClearButton == null || mButtonGravity == GravityBoxSettings.RECENT_CLEAR_OFF ||
-                mButtonGravity == GravityBoxSettings.RECENT_CLEAR_NAVIGATION_BAR) return;
-
-        final Context context = mRecentsClearButton.getContext();
-        final Resources res = mRecentsClearButton.getResources();
-        final int orientation = res.getConfiguration().orientation;
-        FrameLayout.LayoutParams lparams =
-                (FrameLayout.LayoutParams) mRecentsClearButton.getLayoutParams();
-        lparams.gravity = mButtonGravity;
-        if (mButtonGravity == 51 || mButtonGravity == 53) {
-            int gravityForNavbarPosition = mNavbarLeftHanded ? 51 : 53;
-            int marginRight = (mButtonGravity == gravityForNavbarPosition &&
-                    orientation == Configuration.ORIENTATION_LANDSCAPE &&
-                    Utils.isPhoneUI(context)) ? mMarginBottomPx : 0;
-            lparams.setMargins(mNavbarLeftHanded ? marginRight : 0, mMarginTopPx,
-                    !mNavbarLeftHanded ? marginRight : 0, 0);
-        } else {
-            int gravityForNavbarPosition = mNavbarLeftHanded ? 83 : 85;
-            int marginBottom = (orientation == Configuration.ORIENTATION_PORTRAIT ||
-                    !Utils.isPhoneUI(context)) ? mMarginBottomPx : 0;
-            int marginRight = (mButtonGravity == gravityForNavbarPosition &&
-                    orientation == Configuration.ORIENTATION_LANDSCAPE &&
-                    Utils.isPhoneUI(context)) ? mMarginBottomPx : 0;
-            lparams.setMargins(mNavbarLeftHanded ? marginRight : 0, 0,
-                    !mNavbarLeftHanded ? marginRight : 0, marginBottom);
-        }
-        mRecentsClearButton.setLayoutParams(lparams);
-        if (DEBUG) log("Clear all recents button layout updated");
-    }
 
     @SuppressLint("RtlHardcoded")
     private static void updateRamBarLayout() {
@@ -579,9 +471,6 @@ public class ModClearAllRecents {
         final boolean caOnTop = (mButtonGravity & Gravity.TOP) == Gravity.TOP;
         final boolean caOnLeft = (mButtonGravity & Gravity.LEFT) == Gravity.LEFT;
         final boolean rbOnTop = (mRamBarGravity == Gravity.TOP);
-        final boolean sibling = (mRecentsClearButton != null &&
-                mRecentsClearButton.getVisibility() == View.VISIBLE) &&
-                ((caOnTop && rbOnTop) || (!caOnTop && !rbOnTop));
         final int marginTop = rbOnTop ? mMarginTopPx : 0;
         final int marginBottom = (!rbOnTop && (orientation == Configuration.ORIENTATION_PORTRAIT ||
                 !Utils.isPhoneUI(context))) ? mMarginBottomPx : 0;
@@ -592,12 +481,9 @@ public class ModClearAllRecents {
 
         FrameLayout.LayoutParams flp = (FrameLayout.LayoutParams) mRamUsageBar.getLayoutParams();
         flp.gravity = mRamBarGravity;
-        flp.setMargins(
-                sibling && caOnLeft ? (mClearAllRecentsSizePx + marginLeft) :
-                        (mRamUsageBarHorizontalMargin + marginLeft),
+        flp.setMargins(mRamUsageBarHorizontalMargin + marginLeft,
                 rbOnTop ? (mRamUsageBarVerticalMargin + marginTop) : 0,
-                sibling && !caOnLeft ? (mClearAllRecentsSizePx + marginRight) :
-                        (mRamUsageBarHorizontalMargin + marginRight),
+                mRamUsageBarHorizontalMargin + marginRight,
                 rbOnTop ? 0 : (mRamUsageBarVerticalMargin + marginBottom)
         );
         mRamUsageBar.setLayoutParams(flp);

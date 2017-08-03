@@ -107,10 +107,10 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
             ModVolumePanel.initResources(prefs, resparam);
         }
 
-        if (resparam.packageName.equals(ModQsTiles.PACKAGE_NAME) &&
-                prefs.getBoolean(GravityBoxSettings.PREF_KEY_QUICK_SETTINGS_ENABLE, false)) {
-            ModQsTiles.initResources(resparam);
-        }
+//        if (resparam.packageName.equals(ModQsTiles.PACKAGE_NAME) &&
+//                prefs.getBoolean(GravityBoxSettings.PREF_KEY_QUICK_SETTINGS_ENABLE, false)) {
+//            ModQsTiles.initResources(resparam);
+//        }
     }
 
     @Override
@@ -170,10 +170,10 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
             ModDialer25.init(prefs, lpparam.classLoader, lpparam.packageName);
         }
 
-        if (lpparam.packageName.equals(ModQsTiles.PACKAGE_NAME) &&
-                prefs.getBoolean(GravityBoxSettings.PREF_KEY_QUICK_SETTINGS_ENABLE, false)) {
-            ModQsTiles.init(prefs, lpparam.classLoader);
-        }
+//        if (lpparam.packageName.equals(ModQsTiles.PACKAGE_NAME) &&
+//                prefs.getBoolean(GravityBoxSettings.PREF_KEY_QUICK_SETTINGS_ENABLE, false)) {
+//            ModQsTiles.init(prefs, lpparam.classLoader);
+//        }
 
         if (lpparam.packageName.equals(ModStatusbarColor.PACKAGE_NAME)) {
             ModStatusbarColor.init(prefs, lpparam.classLoader);

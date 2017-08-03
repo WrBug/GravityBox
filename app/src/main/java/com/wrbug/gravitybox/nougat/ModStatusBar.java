@@ -998,7 +998,7 @@ public class ModStatusBar {
                                 }
                             }
                         });
-                if (!Utils.isOxygenOs35Rom()) {
+                if (!Utils.isOxygenOs45Rom()) {
                     XposedHelpers.findAndHookMethod(CLASS_PANEL_VIEW, classLoader,
                             "expand", boolean.class, new XC_MethodHook() {
                                 @Override
