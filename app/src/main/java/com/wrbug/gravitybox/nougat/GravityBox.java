@@ -40,7 +40,6 @@ public class GravityBox implements IXposedHookZygoteInit, IXposedHookInitPackage
         MODULE_PATH = startupParam.modulePath;
         prefs = new XSharedPreferences(PACKAGE_NAME);
         prefs.makeWorldReadable();
-
         if (!startupParam.startsSystemServer) return;
 
         XposedBridge.log("GB:Hardware: " + Build.HARDWARE);

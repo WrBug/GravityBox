@@ -2142,4 +2142,7 @@
     <string name="pref_status_bar_bg_alpha_title">Alpha</string>
     <string name="pref_status_bar_bg_color_title">Background Color</string>
     <string name="pref_status_bar_bg_color_summary">option of background color</string>
+    <string name="donate_detail">支持开发，点击这里捐赠 使用微信方式的请在弹出扫码界面后自行在【从相册中选取二维码】选择二维码</string>
+    <string name="pay_type_alipay">Alipay</string>
+    <string name="pay_type_wechat">Wechat</string>
 </resources>

@@ -32,6 +32,8 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
+
 public class KeyguardImageService extends Service {
     public static final int MSG_BEGIN_OUTPUT = 1;
     public static final int MSG_WRITE_OUTPUT = 2;
@@ -61,7 +63,8 @@ public class KeyguardImageService extends Service {
                     } catch (Throwable t) {
                         try {
                             msg.replyTo.send(Message.obtain(null, MSG_ERROR));
-                        } catch (RemoteException e1) { }
+                        } catch (RemoteException e1) {
+                        }
                         t.printStackTrace();
                     }
                     break;
@@ -74,7 +77,8 @@ public class KeyguardImageService extends Service {
                     } catch (Throwable t) {
                         try {
                             msg.replyTo.send(Message.obtain(null, MSG_ERROR));
-                        } catch (RemoteException e1) { }
+                        } catch (RemoteException e1) {
+                        }
                         t.printStackTrace();
                     }
                     break;
@@ -91,14 +95,16 @@ public class KeyguardImageService extends Service {
                     break;
             }
         }
-    };
+    }
+
+    ;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mKisImageFile = new File(getFilesDir() + "/kis_image.png");
         final String prefsName = getPackageName() + "_preferences";
-        mPrefs = getSharedPreferences(prefsName, Context.MODE_WORLD_READABLE);
+        mPrefs = SharedPreferencesUtils.getSharedPreferences(this, prefsName);
     }
 
     @Override

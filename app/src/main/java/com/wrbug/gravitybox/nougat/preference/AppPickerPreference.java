@@ -39,6 +39,7 @@ import com.wrbug.gravitybox.nougat.adapters.BasicIconListItem;
 import com.wrbug.gravitybox.nougat.adapters.IIconListAdapterItem;
 import com.wrbug.gravitybox.nougat.adapters.IconListAdapter;
 import com.wrbug.gravitybox.nougat.shortcuts.ShortcutActivity;
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -82,11 +83,11 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-public class AppPickerPreference extends DialogPreference 
-                                 implements OnItemClickListener, 
-                                            OnItemSelectedListener,
-                                            View.OnClickListener,
-                                            View.OnLongClickListener {
+public class AppPickerPreference extends DialogPreference
+        implements OnItemClickListener,
+        OnItemSelectedListener,
+        View.OnClickListener,
+        View.OnLongClickListener {
     private static final String TAG = "GB:AppPickerPreference";
     public static final String SEPARATOR = "#C3C0#";
 
@@ -122,8 +123,9 @@ public class AppPickerPreference extends DialogPreference
     private Bundle mExtraData;
 
     private static LruCache<String, BitmapDrawable> sAppIconCache;
+
     static {
-        final int cacheSize = Math.min((int)Runtime.getRuntime().maxMemory() / 6, 4194304);
+        final int cacheSize = Math.min((int) Runtime.getRuntime().maxMemory() / 6, 4194304);
         sAppIconCache = new LruCache<String, BitmapDrawable>(cacheSize) {
             @Override
             protected int sizeOf(String key, BitmapDrawable d) {
@@ -133,13 +135,13 @@ public class AppPickerPreference extends DialogPreference
     }
 
     public static void cleanupAsync(final Context context) {
-        new AsyncTask<Void,Void,Void>() {
+        new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 try {
                     List<String> usedFileNameList = new ArrayList<String>();
                     final String prefsName = context.getPackageName() + "_preferences";
-                    SharedPreferences prefs = context.getSharedPreferences(prefsName, Context.MODE_WORLD_READABLE);
+                    SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, prefsName);
                     // populate list of used icon files
                     Map<String, ?> keys = prefs.getAll();
                     for (Map.Entry<String, ?> entry : keys.entrySet()) {
@@ -152,9 +154,9 @@ public class AppPickerPreference extends DialogPreference
                                 }
                             }
                         }
-                        if ((val instanceof String) && ((String)val).contains("#Intent")) {
+                        if ((val instanceof String) && ((String) val).contains("#Intent")) {
                             try {
-                                Intent intent = Intent.parseUri((String)val, 0);
+                                Intent intent = Intent.parseUri((String) val, 0);
                                 String fileName = intent.getStringExtra("icon");
                                 if (fileName != null) {
                                     File iconFile = new File(fileName);
@@ -188,6 +190,7 @@ public class AppPickerPreference extends DialogPreference
     class AppInfo {
         String name;
         Drawable icon;
+
         public AppInfo() {
             name = mDefaultSummaryText;
         }
@@ -199,11 +202,11 @@ public class AppPickerPreference extends DialogPreference
         mContext = context;
         mResources = mContext.getResources();
         mDefaultSummaryText = (String) getSummary();
-        mAppIconSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40, 
+        mAppIconSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 40,
                 mResources.getDisplayMetrics());
-        mAppIconPreviewSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60, 
+        mAppIconPreviewSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60,
                 mResources.getDisplayMetrics());
-        mIconPickSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50, 
+        mIconPickSizePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 50,
                 mResources.getDisplayMetrics());
         mPackageManager = mContext.getPackageManager();
         mMode = MODE_APP;
@@ -235,7 +238,7 @@ public class AppPickerPreference extends DialogPreference
 
         ArrayList<IIconListAdapterItem> list = new ArrayList<IIconListAdapterItem>(labels.length);
         for (int i = 0; i < labels.length; i++) {
-            BasicIconListItem item = new BasicIconListItem(labels[i], null, 
+            BasicIconListItem item = new BasicIconListItem(labels[i], null,
                     icons.getResourceId(i, 0), 0, mResources);
             list.add(item);
         }
@@ -248,7 +251,7 @@ public class AppPickerPreference extends DialogPreference
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        LinearLayout widgetFrameView = ((LinearLayout)view.findViewById(android.R.id.widget_frame));
+        LinearLayout widgetFrameView = ((LinearLayout) view.findViewById(android.R.id.widget_frame));
         mBtnAppIcon = new ImageButton(mContext);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(mAppIconPreviewSizePx, mAppIconPreviewSizePx);
         lp.gravity = Gravity.CENTER;
@@ -276,20 +279,21 @@ public class AppPickerPreference extends DialogPreference
         mSearch = (EditText) view.findViewById(R.id.input_search);
         mSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void afterTextChanged(Editable arg0) { }
+            public void afterTextChanged(Editable arg0) {
+            }
 
             @Override
             public void beforeTextChanged(CharSequence arg0, int arg1,
-                    int arg2, int arg3) { }
+                                          int arg2, int arg3) {
+            }
 
             @Override
             public void onTextChanged(CharSequence arg0, int arg1, int arg2,
-                    int arg3) 
-            {
-                if(mListView.getAdapter() == null)
+                                      int arg3) {
+                if (mListView.getAdapter() == null)
                     return;
-                
-                ((IconListAdapter)mListView.getAdapter()).getFilter().filter(arg0);
+
+                ((IconListAdapter) mListView.getAdapter()).getFilter().filter(arg0);
             }
         });
 
@@ -298,9 +302,9 @@ public class AppPickerPreference extends DialogPreference
         mModeSpinner = (Spinner) view.findViewById(R.id.mode_spinner);
         ArrayAdapter<String> mModeSpinnerAdapter = new ArrayAdapter<String>(
                 getContext(), android.R.layout.simple_spinner_item,
-                        new ArrayList<String>(Arrays.asList(
-                                mContext.getString(R.string.app_picker_applications), 
-                                mContext.getString(R.string.app_picker_shortcuts))));
+                new ArrayList<String>(Arrays.asList(
+                        mContext.getString(R.string.app_picker_applications),
+                        mContext.getString(R.string.app_picker_shortcuts))));
         mModeSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mModeSpinner.setAdapter(mModeSpinnerAdapter);
         mModeSpinner.setOnItemSelectedListener(this);
@@ -363,42 +367,42 @@ public class AppPickerPreference extends DialogPreference
             setValue(null);
             setSummary(mDefaultSummaryText);
         }
-    } 
+    }
 
     @Override
     public void onClick(View v) {
-        if (v != mBtnAppIcon || 
+        if (v != mBtnAppIcon ||
                 sIconPickerAdapter == null ||
                 getPersistedString(null) == null) return;
 
         if (mIconPickerDialog == null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
-                .setTitle(R.string.icon_picker_choose_icon_title)
-                .setAdapter(sIconPickerAdapter, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                        try {
-                            BasicIconListItem item = (BasicIconListItem) sIconPickerAdapter.getItem(which);
-                            Intent intent = Intent.parseUri(getPersistedString(null), 0);
-                            if (intent.hasExtra("icon")) {
-                                intent.removeExtra("icon");
+                    .setTitle(R.string.icon_picker_choose_icon_title)
+                    .setAdapter(sIconPickerAdapter, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            try {
+                                BasicIconListItem item = (BasicIconListItem) sIconPickerAdapter.getItem(which);
+                                Intent intent = Intent.parseUri(getPersistedString(null), 0);
+                                if (intent.hasExtra("icon")) {
+                                    intent.removeExtra("icon");
+                                }
+                                intent.putExtra("iconResName", mResources.getResourceEntryName(
+                                        item.getIconLeftId()));
+                                setValue(intent.toUri(0));
+                            } catch (Exception e) {
+                                e.printStackTrace();
                             }
-                            intent.putExtra("iconResName", mResources.getResourceEntryName(
-                                    item.getIconLeftId()));
-                            setValue(intent.toUri(0));
-                        } catch (Exception e) {
-                            e.printStackTrace();
+
                         }
-                        
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
             mIconPickerDialog = builder.create();
         }
 
@@ -461,7 +465,7 @@ public class AppPickerPreference extends DialogPreference
             setValue(newValue);
             Log.d(TAG, "Converted old AppPickerPreference value: " + newValue);
             return newValue;
-        } catch(Exception e) {
+        } catch (Exception e) {
             Log.e(TAG, "Error converting old AppPickerPreference value: " + e.getMessage());
             return null;
         }
@@ -472,10 +476,9 @@ public class AppPickerPreference extends DialogPreference
     }
 
     private void setData() {
-        mAsyncTask = new AsyncTask<Void,Void,ArrayList<IIconListAdapterItem>>() {
+        mAsyncTask = new AsyncTask<Void, Void, ArrayList<IIconListAdapterItem>>() {
             @Override
-            protected void onPreExecute()
-            {
+            protected void onPreExecute() {
                 super.onPreExecute();
 
                 mListView.setVisibility(View.INVISIBLE);
@@ -496,24 +499,24 @@ public class AppPickerPreference extends DialogPreference
                 } else if (mMode == MODE_SHORTCUT) {
                     mainIntent.setAction(Intent.ACTION_CREATE_SHORTCUT);
                 }
-                for(PackageInfo pi : packages) {
+                for (PackageInfo pi : packages) {
                     if (this.isCancelled()) break;
                     if (mMode == MODE_SHORTCUT &&
                             pi.packageName.equals(mContext.getPackageName()) &&
-                                    !mAllowGravityBoxActions)
+                            !mAllowGravityBoxActions)
                         continue;
                     mainIntent.setPackage(pi.packageName);
                     List<ResolveInfo> activityList = mPackageManager.queryIntentActivities(mainIntent, 0);
-                    for(ResolveInfo ri : activityList) {
+                    for (ResolveInfo ri : activityList) {
                         appList.add(ri);
                     }
                 }
 
                 Collections.sort(appList, new ResolveInfo.DisplayNameComparator(mPackageManager));
                 if (mNullItemEnabled) {
-                    itemList.add(mMode == MODE_SHORTCUT ? 
-                        new ShortcutItem(mContext.getString(R.string.app_picker_none), null) :
-                        new AppItem(mContext.getString(R.string.app_picker_none), null));
+                    itemList.add(mMode == MODE_SHORTCUT ?
+                            new ShortcutItem(mContext.getString(R.string.app_picker_none), null) :
+                            new AppItem(mContext.getString(R.string.app_picker_none), null));
                 }
                 for (ResolveInfo ri : appList) {
                     if (this.isCancelled()) break;
@@ -527,18 +530,17 @@ public class AppPickerPreference extends DialogPreference
             }
 
             @Override
-            protected void onPostExecute(ArrayList<IIconListAdapterItem> result)
-            {
+            protected void onPostExecute(ArrayList<IIconListAdapterItem> result) {
                 mProgressBar.setVisibility(View.GONE);
                 mSearch.setVisibility(View.VISIBLE);
                 mListView.setAdapter(new IconListAdapter(mContext, result));
-                ((IconListAdapter)mListView.getAdapter()).notifyDataSetChanged();
+                ((IconListAdapter) mListView.getAdapter()).notifyDataSetChanged();
                 mListView.setVisibility(View.VISIBLE);
             }
         }.execute();
     }
 
-    public void setValue(String value){
+    public void setValue(String value) {
         if (!callChangeListener(value))
             return;
 
@@ -591,7 +593,7 @@ public class AppPickerPreference extends DialogPreference
 
             int iconResId = intent.getStringExtra("iconResName") != null ?
                     mResources.getIdentifier(intent.getStringExtra("iconResName"),
-                    "drawable", mContext.getPackageName()) : 0;
+                            "drawable", mContext.getPackageName()) : 0;
             if (iconResId != 0) {
                 appInfo.icon = mResources.getDrawable(iconResId);
             } else if (intent.hasExtra("icon")) {
@@ -631,7 +633,8 @@ public class AppPickerPreference extends DialogPreference
     }
 
     @Override
-    public void onNothingSelected(AdapterView<?> parent) { }
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
 
     class AppItem implements IIconListAdapterItem {
         protected String mAppName;
@@ -639,7 +642,8 @@ public class AppPickerPreference extends DialogPreference
         protected ResolveInfo mResolveInfo;
         protected Intent mIntent;
 
-        private AppItem() { }
+        private AppItem() {
+        }
 
         public AppItem(String appName, ResolveInfo ri) {
             mAppName = appName;

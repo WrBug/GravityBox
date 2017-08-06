@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,16 +38,20 @@ import com.wrbug.gravitybox.nougat.preference.SeekBarPreference;
 import com.wrbug.gravitybox.nougat.shortcuts.GoHomeShortcut;
 import com.wrbug.gravitybox.nougat.shortcuts.ShortcutActivity;
 import com.wrbug.gravitybox.nougat.util.DevicesUtils;
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
 import com.wrbug.gravitybox.nougat.webserviceclient.RequestParams;
 import com.wrbug.gravitybox.nougat.webserviceclient.TransactionResult;
 import com.wrbug.gravitybox.nougat.webserviceclient.WebServiceClient;
 import com.wrbug.gravitybox.nougat.webserviceclient.TransactionResult.TransactionStatus;
 import com.wrbug.gravitybox.nougat.webserviceclient.WebServiceClient.WebServiceTaskListener;
 
+import android.didikee.donate.AlipayDonate;
+import android.didikee.donate.WeiXinDonate;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -243,6 +248,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
     public static final String PREF_KEY_ABOUT_GRAVITYBOX = "pref_about_gb";
     public static final String PREF_KEY_ABOUT_QQ_GROUP = "pref_about_qqgroup";
     public static final String PREF_KEY_ABOUT_GPLUS = "pref_about_gplus";
+    public static final String PREF_KEY_ABOUT_DONATE = "pref_about_donate";
     public static final String PREF_KEY_ABOUT_XPOSED = "pref_about_xposed";
     public static final String PREF_ABOUT_CHECK_VERISON = "pref_about_check_verison";
     public static final String PREF_KEY_ABOUT_UNLOCKER = "pref_about_get_unlocker";
@@ -1271,6 +1277,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
         private Preference mPrefAboutGb;
         private Preference mQQGroup;
         private Preference mPrefAboutGplus;
+        private Preference mPrefDonate;
         private Preference mPrefAboutXposed;
         private Preference mPrefAbouCheckVerison;
         private Preference mPrefAboutUnlocker;
@@ -1451,10 +1458,9 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
 
             // this is important because although the handler classes that read these settings
             // are in the same package, they are executed in the context of the hooked package
-            getPreferenceManager().setSharedPreferencesMode(Context.MODE_WORLD_READABLE);
+//            getPreferenceManager().setSharedPreferencesMode(Context.MODE_WORLD_READABLE);
             addPreferencesFromResource(R.xml.gravitybox);
-
-            mPrefs = getPreferenceScreen().getSharedPreferences();
+            mPrefs = SharedPreferencesUtils.getSharedPreferences(getPreferenceManager(), getPreferenceScreen());
             AppPickerPreference.sPrefsFragment = this;
             AppPickerPreference.cleanupAsync(getActivity());
 
@@ -1479,6 +1485,7 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             }
             mQQGroup = findPreference(PREF_KEY_ABOUT_QQ_GROUP);
             mPrefAboutGplus = (Preference) findPreference(PREF_KEY_ABOUT_GPLUS);
+            mPrefDonate = findPreference(PREF_KEY_ABOUT_DONATE);
             mPrefAboutXposed = (Preference) findPreference(PREF_KEY_ABOUT_XPOSED);
             mPrefAbouCheckVerison = (Preference) findPreference(PREF_ABOUT_CHECK_VERISON);
             mPrefAboutUnlocker = (Preference) findPreference(PREF_KEY_ABOUT_UNLOCKER);
@@ -3696,6 +3703,8 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.url_qqgroup)));
             } else if (pref == mPrefAboutGplus) {
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.url_gplus)));
+            } else if (pref == mPrefDonate) {
+                doDonate();
             } else if (pref == mPrefAboutXposed) {
                 intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.url_xposed)));
             } else if (pref == mPrefAbouCheckVerison) {
@@ -3861,6 +3870,50 @@ public class GravityBoxSettings extends Activity implements GravityBoxResultRece
             }
 
             return super.onPreferenceTreeClick(prefScreen, pref);
+        }
+
+        private void doDonate() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+            builder.setTitle(R.string.about_donate_title);
+            builder.setMessage(R.string.donate_detail);
+            builder.setPositiveButton(R.string.pay_type_alipay, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    donateAlipay();
+                }
+            });
+            builder.setNegativeButton(R.string.pay_type_wechat, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    try {
+                        donateWeixin();
+                    } catch (IOException e) {
+
+                    }
+                }
+            });
+            builder.create().show();
+        }
+
+        /**
+         * 支付宝支付
+         */
+        private void donateAlipay() {
+            boolean hasInstalledAlipayClient = AlipayDonate.hasInstalledAlipayClient(getActivity());
+            if (hasInstalledAlipayClient) {
+                AlipayDonate.startAlipayClient(getActivity(), "FKX05805FGZOG2QLPOV3F0");
+            }
+        }
+
+        /**
+         * 微信支付
+         */
+        private void donateWeixin() throws IOException {
+            InputStream weixinQrIs = getResources().getAssets().open("mm_facetoface_collect_qrcode_1502016483555");
+            String qrPath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "GravityBox" + File.separator +
+                    "wechat.png";
+            WeiXinDonate.saveDonateQrImage2SDCard(qrPath, BitmapFactory.decodeStream(weixinQrIs));
+            WeiXinDonate.donateViaWeiXin(getActivity(), qrPath);
         }
 
         private void setCustomLockscreenImage() {

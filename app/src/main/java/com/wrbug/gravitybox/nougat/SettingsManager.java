@@ -18,11 +18,14 @@ package com.wrbug.gravitybox.nougat;
 import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.widget.Toast;
+
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
 
 public class SettingsManager {
     private static final String BACKUP_PATH = Environment.getExternalStorageDirectory() + "/GravityBox/backup";
@@ -59,7 +62,8 @@ public class SettingsManager {
         if (!noMediaFile.exists()) {
             try {
                 noMediaFile.createNewFile();
-            } catch (IOException ioe) { }
+            } catch (IOException ioe) {
+            }
         }
 
         // delete backup OK flag file first (if exists)
@@ -69,7 +73,7 @@ public class SettingsManager {
         }
 
         // preferences
-        String[] prefsFileNames = new String[] { 
+        String[] prefsFileNames = new String[]{
                 mContext.getPackageName() + "_preferences.xml",
                 "ledcontrol.xml",
                 "quiet_hours.xml"
@@ -146,7 +150,7 @@ public class SettingsManager {
             Toast.makeText(mContext, R.string.settings_backup_failed, Toast.LENGTH_LONG).show();
             return false;
         }
-       
+
         Toast.makeText(mContext, R.string.settings_backup_success, Toast.LENGTH_SHORT).show();
         return true;
     }
@@ -171,7 +175,7 @@ public class SettingsManager {
         String uuid = getOrCreateUuid();
 
         // preferences
-        String[] prefsFileNames = new String[] { 
+        String[] prefsFileNames = new String[]{
                 mContext.getPackageName() + "_preferences.xml",
                 "ledcontrol.xml",
                 "quiet_hours.xml"
@@ -255,7 +259,7 @@ public class SettingsManager {
 
     public String getOrCreateUuid() {
         final String prefsName = mContext.getPackageName() + "_preferences";
-        SharedPreferences prefs = mContext.getSharedPreferences(prefsName, Context.MODE_WORLD_READABLE);
+        SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(mContext, prefsName);
         String uuid = prefs.getString("settings_uuid", null);
         if (uuid == null) {
             uuid = UUID.randomUUID().toString();
@@ -266,7 +270,7 @@ public class SettingsManager {
 
     public void resetUuid(String uuid) {
         String prefsName = mContext.getPackageName() + "_preferences";
-        SharedPreferences prefs = mContext.getSharedPreferences(prefsName, Context.MODE_WORLD_READABLE);
+        SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(mContext, prefsName);
         prefs.edit().putString("settings_uuid", uuid).commit();
     }
 

@@ -32,6 +32,8 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,31 +50,31 @@ public class WifiPriorityActivity extends ListActivity implements GravityBoxResu
 
     private final TouchInterceptor.DropListener mDropListener =
             new TouchInterceptor.DropListener() {
-        public void drop(int from, int to) {
-            if (from == to) return;
+                public void drop(int from, int to) {
+                    if (from == to) return;
 
-            // Sort networks by user selection
-            List<WifiNetwork> networks = mAdapter.getNetworks();
-            WifiNetwork o = networks.remove(from);
-            networks.add(to, o);
+                    // Sort networks by user selection
+                    List<WifiNetwork> networks = mAdapter.getNetworks();
+                    WifiNetwork o = networks.remove(from);
+                    networks.add(to, o);
 
-            // Set the new priorities of the networks
-            int cc = networks.size();
-            ArrayList<WifiConfiguration> configList = new ArrayList<>();
-            for (int i = 0; i < cc; i++) {
-                WifiNetwork network = networks.get(i);
-                network.config.priority = cc - i;
-                configList.add(network.config);
-            }
+                    // Set the new priorities of the networks
+                    int cc = networks.size();
+                    ArrayList<WifiConfiguration> configList = new ArrayList<>();
+                    for (int i = 0; i < cc; i++) {
+                        WifiNetwork network = networks.get(i);
+                        network.config.priority = cc - i;
+                        configList.add(network.config);
+                    }
 
-            mNetworksListView.invalidateViews();
+                    mNetworksListView.invalidateViews();
 
-            Intent intent = new Intent(ModHwKeys.ACTION_UPDATE_WIFI_CONFIG);
-            intent.putParcelableArrayListExtra(ModHwKeys.EXTRA_WIFI_CONFIG_LIST, configList);
-            intent.putExtra("receiver", mReceiver);
-            WifiPriorityActivity.this.sendBroadcast(intent);
-        }
-    };
+                    Intent intent = new Intent(ModHwKeys.ACTION_UPDATE_WIFI_CONFIG);
+                    intent.putParcelableArrayListExtra(ModHwKeys.EXTRA_WIFI_CONFIG_LIST, configList);
+                    intent.putExtra("receiver", mReceiver);
+                    WifiPriorityActivity.this.sendBroadcast(intent);
+                }
+            };
 
     private WifiManager mWifiManager;
     private TouchInterceptor mNetworksListView;
@@ -92,10 +94,10 @@ public class WifiPriorityActivity extends ListActivity implements GravityBoxResu
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
 
         String prefsName = getPackageName() + "_preferences";
-        mPrefs = getSharedPreferences(prefsName, Context.MODE_WORLD_READABLE);
+        mPrefs = SharedPreferencesUtils.getSharedPreferences(this, prefsName);
 
         // Set the touchable listview
-        mNetworksListView = (TouchInterceptor)getListView();
+        mNetworksListView = (TouchInterceptor) getListView();
         mNetworksListView.setDropListener(mDropListener);
         mAdapter = new WifiPriorityAdapter(this, mWifiManager);
         setListAdapter(mAdapter);
@@ -130,6 +132,7 @@ public class WifiPriorityActivity extends ListActivity implements GravityBoxResu
     private class WifiNetwork {
         WifiConfiguration config;
         boolean trusted;
+
         WifiNetwork(WifiConfiguration c) {
             config = c;
         }
@@ -250,7 +253,7 @@ public class WifiPriorityActivity extends ListActivity implements GravityBoxResu
                 v = convertView;
             }
 
-            WifiNetwork network = (WifiNetwork)getItem(position);
+            WifiNetwork network = (WifiNetwork) getItem(position);
             v.setTag(network);
 
             final TextView name = (TextView) v.findViewById(R.id.name);
@@ -269,7 +272,7 @@ public class WifiPriorityActivity extends ListActivity implements GravityBoxResu
             if (ssid == null || !ssid.startsWith("\"") || !ssid.endsWith("\"")) {
                 return ssid;
             }
-            return ssid.substring(1, ssid.length()-1);
+            return ssid.substring(1, ssid.length() - 1);
         }
     }
 }

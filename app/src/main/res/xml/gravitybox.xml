@@ -2750,7 +2750,10 @@
             android:key="pref_about_gplus"
             android:summary="@string/pref_about_wrbug_summary"
             android:title="Mandroid blog"/>
-
+        <Preference
+            android:key="pref_about_donate"
+            android:summary="@string/about_donate_summary"
+            android:title="@string/about_donate_title"/>
         <Preference
             android:key="pref_about_xposed"
             android:summary="@string/about_xposed_summary"

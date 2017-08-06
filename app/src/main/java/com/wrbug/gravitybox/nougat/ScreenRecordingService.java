@@ -50,6 +50,8 @@ import android.provider.Settings.SettingNotFoundException;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -202,7 +204,7 @@ public class ScreenRecordingService extends Service {
         super.onCreate();
 
         final String prefsName = getPackageName() + "_preferences";
-        mPrefs = getSharedPreferences(prefsName, Context.MODE_WORLD_READABLE);
+        mPrefs = SharedPreferencesUtils.getSharedPreferences(this, prefsName);
 
         mHandler = new Handler() {
             public void handleMessage(Message msg) {

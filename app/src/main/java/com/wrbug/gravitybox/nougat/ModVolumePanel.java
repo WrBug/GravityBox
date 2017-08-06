@@ -172,10 +172,7 @@ public class ModVolumePanel {
                             }
                         });
             }
-            String[] s = LogUtils.showDeclaredMethod(classVolumePanel).split("\n");
-            for (String s1 : s) {
-                log(s1);
-            }
+            LogUtils.showDeclaredMethod(TAG, classVolumePanel);
             XC_MethodHook hook = new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {

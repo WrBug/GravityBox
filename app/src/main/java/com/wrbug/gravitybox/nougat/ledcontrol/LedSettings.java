@@ -20,6 +20,7 @@ import java.util.Set;
 
 import com.wrbug.gravitybox.nougat.GravityBoxSettings;
 import com.wrbug.gravitybox.nougat.Utils;
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
 
 import android.app.Notification;
 import android.content.Context;
@@ -37,21 +38,37 @@ public class LedSettings {
     public static final String ACTION_UNC_SETTINGS_CHANGED = "gravitybox.intent.action.UNC_SETTINGS_CHANGED";
     public static final String EXTRA_UNC_AS_ENABLED = "uncActiveScreenEnabled";
 
-    public enum LedMode { ORIGINAL, OVERRIDE, OFF };
-    public enum HeadsUpMode { DEFAULT, ALWAYS, IMMERSIVE, OFF };
-    public enum ActiveScreenMode { DISABLED, DO_NOTHING };
+    public enum LedMode {ORIGINAL, OVERRIDE, OFF}
+
+    ;
+
+    public enum HeadsUpMode {DEFAULT, ALWAYS, IMMERSIVE, OFF}
+
+    ;
+
+    public enum ActiveScreenMode {DISABLED, DO_NOTHING}
+
+    ;
+
     public enum Visibility {
         DEFAULT(-2),
         PRIVATE(Notification.VISIBILITY_PRIVATE),
         PUBLIC(Notification.VISIBILITY_PUBLIC),
         SECRET(Notification.VISIBILITY_SECRET);
         private int mValue;
+
         Visibility(int value) {
             mValue = value;
         }
-        public int getValue() { return mValue; }
+
+        public int getValue() {
+            return mValue;
+        }
     }
-    public enum VisibilityLs { DEFAULT, CLEARABLE, PERSISTENT, ALL };
+
+    public enum VisibilityLs {DEFAULT, CLEARABLE, PERSISTENT, ALL}
+
+    ;
 
     private Context mContext;
     private String mPackageName;
@@ -88,8 +105,7 @@ public class LedSettings {
 
     protected static LedSettings deserialize(Context context, String packageName) {
         try {
-            SharedPreferences prefs = context.getSharedPreferences(
-                    "ledcontrol", Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, "ledcontrol");
             Set<String> dataSet = prefs.getStringSet(packageName, null);
             if (dataSet == null) {
                 if (packageName.equals("default")) {
@@ -224,8 +240,7 @@ public class LedSettings {
 
     protected static boolean isActiveScreenMasterEnabled(Context context) {
         try {
-            SharedPreferences prefs = context.getSharedPreferences(
-                    "ledcontrol", Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, "ledcontrol");
             return prefs.getBoolean(PREF_KEY_ACTIVE_SCREEN_ENABLED, false);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -235,8 +250,7 @@ public class LedSettings {
 
     protected static boolean isQuietHoursEnabled(Context context) {
         try {
-            SharedPreferences prefs = context.getSharedPreferences(
-                    "quiet_hours", Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, "quiet_hours");
             return prefs.getBoolean(QuietHoursActivity.PREF_KEY_QH_ENABLED, false);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -247,8 +261,7 @@ public class LedSettings {
     protected static boolean isHeadsUpEnabled(Context context) {
         try {
             final String prefsName = context.getPackageName() + "_preferences";
-            SharedPreferences prefs = context.getSharedPreferences(
-                    prefsName, Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, prefsName);
             return prefs.getBoolean(GravityBoxSettings.PREF_KEY_HEADS_UP_MASTER_SWITCH, false);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -259,8 +272,7 @@ public class LedSettings {
     protected static boolean isProximityWakeUpEnabled(Context context) {
         try {
             final String prefsName = context.getPackageName() + "_preferences";
-            SharedPreferences prefs = context.getSharedPreferences(
-                    prefsName, Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, prefsName);
             return prefs.getBoolean(GravityBoxSettings.PREF_KEY_POWER_PROXIMITY_WAKE, false);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -270,8 +282,7 @@ public class LedSettings {
 
     public static boolean isUncLocked(Context context) {
         try {
-            SharedPreferences prefs = context.getSharedPreferences(
-                    "ledcontrol", Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, "ledcontrol");
             return prefs.getBoolean(PREF_KEY_LOCKED, false);
         } catch (Throwable t) {
             t.printStackTrace();
@@ -281,10 +292,9 @@ public class LedSettings {
 
     public static void lockUnc(Context context, boolean lock) {
         try {
-            SharedPreferences prefs = context.getSharedPreferences(
-                    "ledcontrol", Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(context, "ledcontrol");
             prefs.edit().putBoolean(PREF_KEY_LOCKED, lock).commit();
-            prefs = context.getSharedPreferences("quiet_hours", Context.MODE_WORLD_READABLE);
+            prefs = SharedPreferencesUtils.getSharedPreferences(context, "quiet_hours");
             prefs.edit().putBoolean(QuietHoursActivity.PREF_KEY_QH_LOCKED, lock).commit();
             Intent intent = new Intent(ACTION_UNC_SETTINGS_CHANGED);
             context.sendBroadcast(intent);
@@ -350,7 +360,7 @@ public class LedSettings {
     protected static long[] parseVibratePatternString(String patternStr) throws Exception {
         String[] vals = patternStr.split(",");
         long[] pattern = new long[vals.length];
-        for (int i=0; i<pattern.length; i++) {
+        for (int i = 0; i < pattern.length; i++) {
             pattern[i] = Long.valueOf(vals[i]);
         }
         return pattern;
@@ -619,8 +629,7 @@ public class LedSettings {
             dataSet.add("hidePersistent:" + mHidePersistent);
             dataSet.add("ledDnd:" + mLedDnd);
             dataSet.add("ledIgnoreUpdate:" + mLedIgnoreUpdate);
-            SharedPreferences prefs = mContext.getSharedPreferences(
-                    "ledcontrol", Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(mContext, "ledcontrol");
             prefs.edit().putStringSet(mPackageName, dataSet).commit();
             Intent intent = new Intent(ACTION_UNC_SETTINGS_CHANGED);
             mContext.sendBroadcast(intent);
@@ -630,8 +639,8 @@ public class LedSettings {
     }
 
     public String toString() {
-        String buf = "[" + mPackageName + "," + mEnabled + "," + mColor + "," + mLedOnMs + 
-                "," + mLedOffMs + "," + mOngoing + ";" + mSoundOverride + ";" + 
+        String buf = "[" + mPackageName + "," + mEnabled + "," + mColor + "," + mLedOnMs +
+                "," + mLedOffMs + "," + mOngoing + ";" + mSoundOverride + ";" +
                 mSoundUri + ";" + mSoundOnlyOnce + ";" + mInsistent + "]";
         return buf;
     }

@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import com.wrbug.gravitybox.nougat.GravityBoxSettings;
 import com.wrbug.gravitybox.nougat.R;
 import com.wrbug.gravitybox.nougat.Utils;
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -53,15 +54,15 @@ public class QuietHoursActivity extends Activity {
     public static final String PREF_KEY_QH_WEEKDAYS = "pref_lc_qh_weekdays";
     public static final String PREF_KEY_MUTE_SYSTEM_VIBE = "pref_lc_qh_mute_system_vibe";
 
-    public static final String ACTION_QUIET_HOURS_CHANGED = 
+    public static final String ACTION_QUIET_HOURS_CHANGED =
             "gravitybox.intent.action.QUIET_HOURS_CHANGED";
-    public static final String ACTION_SET_QUIET_HOURS_MODE = 
+    public static final String ACTION_SET_QUIET_HOURS_MODE =
             "gravitybox.intent.action.SET_QUIET_HOURS_MODE";
     public static final String EXTRA_QH_MODE = "qhMode";
 
     public static QuietHours.Mode setQuietHoursMode(final Context context, String mode) {
         try {
-            SharedPreferences prefs = context.getSharedPreferences("quiet_hours", Context.MODE_WORLD_READABLE);
+            SharedPreferences prefs = context.getSharedPreferences("quiet_hours", Context.MODE_PRIVATE);
             QuietHours qh = new QuietHours(prefs);
             if (qh.uncLocked || !qh.enabled) {
                 return null;
@@ -81,7 +82,7 @@ public class QuietHoursActivity extends Activity {
                         }
                         break;
                     case AUTO:
-                        qhMode = qh.quietHoursActive() ? 
+                        qhMode = qh.quietHoursActive() ?
                                 QuietHours.Mode.OFF : QuietHours.Mode.ON;
                         break;
                     case OFF:
@@ -104,11 +105,16 @@ public class QuietHoursActivity extends Activity {
 
     public static int getToastResIdFromMode(QuietHours.Mode mode) {
         switch (mode) {
-            case ON: return R.string.quiet_hours_on;
-            case OFF: return R.string.quiet_hours_off;
-            case AUTO: return R.string.quiet_hours_auto;
-            case WEAR: return R.string.quiet_hours_wear;
-            default: return 0;
+            case ON:
+                return R.string.quiet_hours_on;
+            case OFF:
+                return R.string.quiet_hours_off;
+            case AUTO:
+                return R.string.quiet_hours_auto;
+            case WEAR:
+                return R.string.quiet_hours_wear;
+            default:
+                return 0;
         }
     }
 
@@ -135,28 +141,25 @@ public class QuietHoursActivity extends Activity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            getPreferenceManager().setSharedPreferencesName("quiet_hours");
-            getPreferenceManager().setSharedPreferencesMode(Context.MODE_WORLD_READABLE);
-            mPrefs = getPreferenceManager().getSharedPreferences();
-
+            mPrefs = SharedPreferencesUtils.getSharedPreferences(getPreferenceManager(), "quiet_hours");
             addPreferencesFromResource(R.xml.led_control_quiet_hours_settings);
             setupWeekDaysPref();
             mPrefSystemSounds = (MultiSelectListPreference) findPreference(PREF_KEY_QH_MUTE_SYSTEM_SOUNDS);
         }
 
         private void setupWeekDaysPref() {
-            mPrefWeekDays = (MultiSelectListPreference) findPreference(PREF_KEY_QH_WEEKDAYS); 
+            mPrefWeekDays = (MultiSelectListPreference) findPreference(PREF_KEY_QH_WEEKDAYS);
             String[] days = new DateFormatSymbols(Locale.getDefault()).getWeekdays();
             CharSequence[] entries = new CharSequence[7];
             CharSequence[] entryValues = new CharSequence[7];
-            for (int i=1; i<=7; i++) {
-                entries[i-1] = days[i];
-                entryValues[i-1] = String.valueOf(i);
+            for (int i = 1; i <= 7; i++) {
+                entries[i - 1] = days[i];
+                entryValues[i - 1] = String.valueOf(i);
             }
             mPrefWeekDays.setEntries(entries);
             mPrefWeekDays.setEntryValues(entryValues);
             if (mPrefs.getStringSet(PREF_KEY_QH_WEEKDAYS, null) == null) {
-                Set<String> value = new HashSet<String>(Arrays.asList("2","3","4","5","6"));
+                Set<String> value = new HashSet<String>(Arrays.asList("2", "3", "4", "5", "6"));
                 mPrefs.edit().putStringSet(PREF_KEY_QH_WEEKDAYS, value).commit();
                 mPrefWeekDays.setValues(value);
             }
@@ -178,7 +181,7 @@ public class QuietHoursActivity extends Activity {
             summary = "";
             if (values != null) {
                 for (String value : values) {
-                    for (int i=0; i<entryValues.length; i++) {
+                    for (int i = 0; i < entryValues.length; i++) {
                         if (entryValues[i].equals(value)) {
                             if (!summary.isEmpty()) summary += ", ";
                             summary += entries[i];

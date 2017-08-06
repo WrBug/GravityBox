@@ -34,6 +34,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.os.PowerManager.WakeLock;
 
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
+
 public class TorchService extends Service {
     private static final String TAG = "GB:TorchService";
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -58,38 +60,39 @@ public class TorchService extends Service {
 
     private final CameraManager.TorchCallback mTorchCallback =
             new CameraManager.TorchCallback() {
-        @Override
-        public void onTorchModeUnavailable(String cameraId) {
-            if (DEBUG) Log.d(TAG, "onTorchModeUnavailable: cameraId=" + cameraId);
-            if (TextUtils.equals(cameraId, getCameraId())) {
-                resetTimeout();
-                mTorchStatus = TORCH_STATUS_ERROR;
-                maybeProcessStartIntent();
-                TorchService.this.stopForeground(true);
-                broadcastStatus();
-                stopSelf();
-            }
-        }
-        @Override
-        public void onTorchModeChanged(String cameraId, boolean enabled) {
-            if (DEBUG) Log.d(TAG, "onTorchModeChanged: cameraId=" + cameraId +
-                    "; enabled=" + enabled);
-            if (TextUtils.equals(cameraId, getCameraId())) {
-                resetTimeout();
-                if (enabled) {
-                    mTorchStatus = TORCH_STATUS_ON;
-                    TorchService.this.startForeground(2, mTorchNotif);
-                    broadcastStatus();
-                    setupTimeout();
-                } else {
-                    mTorchStatus = TORCH_STATUS_OFF;
-                    TorchService.this.stopForeground(true);
-                    broadcastStatus();
+                @Override
+                public void onTorchModeUnavailable(String cameraId) {
+                    if (DEBUG) Log.d(TAG, "onTorchModeUnavailable: cameraId=" + cameraId);
+                    if (TextUtils.equals(cameraId, getCameraId())) {
+                        resetTimeout();
+                        mTorchStatus = TORCH_STATUS_ERROR;
+                        maybeProcessStartIntent();
+                        TorchService.this.stopForeground(true);
+                        broadcastStatus();
+                        stopSelf();
+                    }
                 }
-                maybeProcessStartIntent();
-            }
-        }
-    };
+
+                @Override
+                public void onTorchModeChanged(String cameraId, boolean enabled) {
+                    if (DEBUG) Log.d(TAG, "onTorchModeChanged: cameraId=" + cameraId +
+                            "; enabled=" + enabled);
+                    if (TextUtils.equals(cameraId, getCameraId())) {
+                        resetTimeout();
+                        if (enabled) {
+                            mTorchStatus = TORCH_STATUS_ON;
+                            TorchService.this.startForeground(2, mTorchNotif);
+                            broadcastStatus();
+                            setupTimeout();
+                        } else {
+                            mTorchStatus = TORCH_STATUS_OFF;
+                            TorchService.this.stopForeground(true);
+                            broadcastStatus();
+                        }
+                        maybeProcessStartIntent();
+                    }
+                }
+            };
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -116,9 +119,8 @@ public class TorchService extends Service {
                 getString(R.string.turn_off), stopIntent).build());
         mTorchNotif = builder.build();
 
-        SharedPreferences prefs = getSharedPreferences(getPackageName() + "_preferences",
-                Context.MODE_WORLD_READABLE);
-        mTorchTimeout = prefs.getInt(GravityBoxSettings.PREF_KEY_TORCH_AUTO_OFF, 10)*60*1000;
+        SharedPreferences prefs = SharedPreferencesUtils.getSharedPreferences(this, getPackageName() + "_preferences");
+        mTorchTimeout = prefs.getInt(GravityBoxSettings.PREF_KEY_TORCH_AUTO_OFF, 10) * 60 * 1000;
         mHandler = new Handler();
 
         mCameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
@@ -131,7 +133,7 @@ public class TorchService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null &&
                 (ACTION_TOGGLE_TORCH.equals(intent.getAction()) ||
-                    ACTION_TORCH_GET_STATUS.equals(intent.getAction()))) {
+                        ACTION_TORCH_GET_STATUS.equals(intent.getAction()))) {
             mStartIntent = intent;
             maybeProcessStartIntent();
             return START_NOT_STICKY;
@@ -166,7 +168,7 @@ public class TorchService extends Service {
                     CameraCharacteristics c = mCameraManager.getCameraCharacteristics(id);
                     Boolean flashAvailable = c.get(CameraCharacteristics.FLASH_INFO_AVAILABLE);
                     Integer lensFacing = c.get(CameraCharacteristics.LENS_FACING);
-                    if (flashAvailable != null && flashAvailable && lensFacing != null && 
+                    if (flashAvailable != null && flashAvailable && lensFacing != null &&
                             lensFacing == CameraCharacteristics.LENS_FACING_BACK) {
                         mCameraId = id;
                     }

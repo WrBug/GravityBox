@@ -37,7 +37,9 @@ public class GravityBoxApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        initBugly();
+        if (!BuildConfig.DEBUG) {
+            initBugly();
+        }
     }
 
     private void initBugly() {

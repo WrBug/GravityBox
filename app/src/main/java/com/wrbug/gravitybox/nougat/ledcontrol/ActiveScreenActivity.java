@@ -19,6 +19,7 @@ import java.io.File;
 
 import com.wrbug.gravitybox.nougat.GravityBoxSettings;
 import com.wrbug.gravitybox.nougat.R;
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
 
 import android.app.Activity;
 import android.content.Context;
@@ -51,10 +52,7 @@ public class ActiveScreenActivity extends Activity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            getPreferenceManager().setSharedPreferencesName("ledcontrol");
-            getPreferenceManager().setSharedPreferencesMode(Context.MODE_WORLD_READABLE);
-            mPrefs = getPreferenceManager().getSharedPreferences();
-
+            mPrefs = SharedPreferencesUtils.getSharedPreferences(getPreferenceManager(), "ledcontrol");
             addPreferencesFromResource(R.xml.led_control_active_screen_settings);
 
             mPrefPocketMode = (CheckBoxPreference) findPreference(

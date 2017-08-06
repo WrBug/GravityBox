@@ -165,7 +165,7 @@ public class ModClearAllRecents {
         }
     };
 
-    public static void init(final XSharedPreferences prefs, ClassLoader classLoader) {
+    public static void init(final XSharedPreferences prefs, final ClassLoader classLoader) {
         try {
             Class<?> recentActivityClass = XposedHelpers.findClass(CLASS_RECENT_ACTIVITY, classLoader);
             Class<?> systemBarScrimViewsClass = XposedHelpers.findClass(CLASS_SYSTEM_BAR_SCRIM_VIEWS, classLoader);

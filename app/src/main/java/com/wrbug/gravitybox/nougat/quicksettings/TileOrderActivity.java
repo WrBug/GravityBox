@@ -27,6 +27,7 @@ import com.wrbug.gravitybox.nougat.R;
 import com.wrbug.gravitybox.nougat.TouchInterceptor;
 import com.wrbug.gravitybox.nougat.Utils;
 import com.wrbug.gravitybox.nougat.ledcontrol.LedSettings;
+import com.wrbug.gravitybox.nougat.util.SharedPreferencesUtils;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -77,13 +78,14 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
         boolean lockedOnly;
         boolean secured;
         boolean dual;
+
         void showMenu(final ListView listView, final View anchorView) {
             final PopupMenu menu = new PopupMenu(listView.getContext(), anchorView);
             menu.inflate(R.menu.tile_menu);
             menu.setOnMenuItemClickListener(new OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    switch(item.getItemId()) {
+                    switch (item.getItemId()) {
                         case R.id.tile_dual:
                             dual = !dual;
                             break;
@@ -109,6 +111,7 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
             updateMenu(menu.getMenu());
             menu.show();
         }
+
         private void updateMenu(Menu menu) {
             if (supportsDualMode()) {
                 menu.findItem(R.id.tile_dual).setChecked(dual);
@@ -124,12 +127,13 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
             miSecured.setChecked(!secured && !"gb_tile_lock_screen".equals(key));
             miSecured.setEnabled(!locked && !"gb_tile_lock_screen".equals(key));
         }
+
         private boolean supportsDualMode() {
             return !isOxygenOs35Rom() &&
                     ("aosp_tile_cell".equals(key) ||
-                    "aosp_tile_wifi".equals(key) ||
-                    "aosp_tile_bluetooth".equals(key) ||
-                    "gb_tile_gps_slimkat".equals(key));
+                            "aosp_tile_wifi".equals(key) ||
+                            "aosp_tile_bluetooth".equals(key) ||
+                            "gb_tile_gps_slimkat".equals(key));
         }
     }
 
@@ -146,7 +150,7 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
         mContext = this;
         mResources = mContext.getResources();
         final String prefsName = mContext.getPackageName() + "_preferences";
-        mPrefs = mContext.getSharedPreferences(prefsName, Context.MODE_WORLD_READABLE);
+        mPrefs = SharedPreferencesUtils.getSharedPreferences(mContext, prefsName);
 
         mBtnSave = (Button) findViewById(R.id.btnSave);
         mBtnSave.setOnClickListener(this);
@@ -211,7 +215,7 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
         }
 
         mPrefs.edit().putString(PREF_KEY_TILE_ORDER, newList).commit();
-        mPrefs.edit().putString(PREF_KEY_TILE_ENABLED,Utils.join(mResources.getStringArray(
+        mPrefs.edit().putString(PREF_KEY_TILE_ENABLED, Utils.join(mResources.getStringArray(
                 R.array.qs_tile_default_values), ",")).commit();
     }
 
@@ -278,7 +282,7 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
                 GravityBoxSettings.PREF_KEY_SMART_RADIO_ENABLE, false))
             return false;
         if ((key.startsWith("xperia_tile") && !Utils.isXperiaDevice()) ||
-               key.equals("xperia_tile_stamina"))
+                key.equals("xperia_tile_stamina"))
             return false;
         if (key.equals("aosp_tile_hotspot") && Utils.isXperiaDevice())
             return false;
@@ -286,7 +290,7 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
             return false;
         if (key.startsWith("op3t_tile") && !isOxygenOs35Rom())
             return false;
-        if ((key.equals("gb_tile_battery") || key.equals("aosp_tile_dnd")) && 
+        if ((key.equals("gb_tile_battery") || key.equals("aosp_tile_dnd")) &&
                 isOxygenOs35Rom())
             return false;
 
@@ -455,7 +459,7 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
                     @Override
                     public void onClick(View v) {
                         TileInfo ti = (TileInfo) itemView.getTag();
-                        ti.enabled = ((CheckBox)v).isChecked();
+                        ti.enabled = ((CheckBox) v).isChecked();
                         menu.setEnabled(ti.enabled);
                         mTileList.invalidateViews();
                     }
@@ -479,7 +483,7 @@ public class TileOrderActivity extends ListActivity implements View.OnClickListe
             name.setText(tileInfo.name);
             if (tileInfo.enabled) {
                 String txt = (tileInfo.locked ? getText(R.string.tile_hidden_locked) :
-                    tileInfo.secured ? getText(R.string.tile_hidden_secured) : "").toString();
+                        tileInfo.secured ? getText(R.string.tile_hidden_secured) : "").toString();
                 if (tileInfo.lockedOnly) {
                     if (!txt.isEmpty()) txt += "; ";
                     txt += getText(R.string.tile_shown_locked_only);
